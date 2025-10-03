@@ -1,6 +1,9 @@
-import React from "react"
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function PrivacyPolicy() {
+  const navigate = useNavigate()
+
   const SectionTitle = ({ children }) => (
     <h2 className="text-2xl font-semibold text-accent mt-8 mb-3">{children}</h2>
   )
@@ -12,6 +15,13 @@ export default function PrivacyPolicy() {
   return (
     <div className="bg-dark text-light min-h-screen p-4 md:p-8">
       <div className="max-w-3xl mx-auto bg-dark-secondary p-6 md:p-10 rounded-lg shadow-2xl border border-dark-border prose prose-invert prose-headings:text-accent prose-a:text-accent hover:prose-a:text-red-400 prose-strong:text-light">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 px-4 py-2 bg-accent text-dark rounded hover:bg-accent-dark transition"
+        >
+          ← Back
+        </button>
         <h1 className="text-3xl md:text-4xl font-bold text-accent mb-6 text-center !mt-0">
           Sinkedin: Privacy Policy (How We Handle Your Deepest, Darkest Career
           Secrets)

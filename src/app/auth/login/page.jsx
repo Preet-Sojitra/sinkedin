@@ -1,22 +1,29 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Mail, AlertCircle } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
-import Link from "next/link"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Eye, EyeOff, Mail, AlertCircle, X, CheckCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
 
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   })
   const [isLoading, setIsLoading] = useState(false)
   const [showError, setShowError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState('')
+
+  // Forgot password states
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('')
+  const [isForgotPasswordLoading, setIsForgotPasswordLoading] = useState(false)
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false)
+  const [forgotPasswordError, setForgotPasswordError] = useState('')
 
   const handleInputChange = (e) => {
     setFormData({
@@ -29,7 +36,7 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     setShowError(false)
-    setErrorMessage("")
+    setErrorMessage('')
     const supabase = createClient()
 
     try {
@@ -39,20 +46,20 @@ export default function LoginPage() {
       })
 
       if (error) {
-        console.error("Login error:", error)
+        console.error('Login error:', error)
         setShowError(true)
-        setErrorMessage(error?.message || "An unexpected error occurred.")
+        setErrorMessage(error?.message || 'An unexpected error occurred.')
         return // Important to stop the function here
       }
 
       if (data.user) {
-        router.replace("/feed")
+        router.replace('/feed')
         router.refresh() // Ensures layout re-renders with new auth state
       }
     } catch (error) {
-      console.error("Login error:", error)
+      console.error('Login error:', error)
       setShowError(true)
-      setErrorMessage("An unexpected error occurred. Please try again.")
+      setErrorMessage('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -61,24 +68,68 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     const supabase = createClient()
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: 'google',
       options: {
         redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
       },
     })
 
     if (error) {
-      console.error("Google login error:", error)
+      console.error('Google login error:', error)
       setShowError(true)
-      setErrorMessage(error?.message || "An unexpected error occurred.")
+      setErrorMessage(error?.message || 'An unexpected error occurred.')
       return
     }
 
     // Handle successful Google login if needed
     if (data.user) {
-      router.push("/feed")
+      router.push('/feed')
       router.refresh() // Ensures layout re-renders with new auth state
     }
+  }
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault()
+    setIsForgotPasswordLoading(true)
+    setForgotPasswordError('')
+    setForgotPasswordSuccess(false)
+
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setForgotPasswordError(data.error || 'Failed to send reset email')
+        return
+      }
+
+      setForgotPasswordSuccess(true)
+      setTimeout(() => {
+        setShowForgotPasswordModal(false)
+        setForgotPasswordSuccess(false)
+        setForgotPasswordEmail('')
+      }, 3000)
+    } catch (error) {
+      console.error('Forgot password error:', error)
+      setForgotPasswordError('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsForgotPasswordLoading(false)
+    }
+  }
+
+  const resetForgotPasswordModal = () => {
+    setShowForgotPasswordModal(false)
+    setForgotPasswordEmail('')
+    setForgotPasswordError('')
+    setForgotPasswordSuccess(false)
+    setIsForgotPasswordLoading(false)
   }
 
   return (
@@ -99,8 +150,8 @@ export default function LoginPage() {
           <div
             className="rounded-lg p-6 mb-8"
             style={{
-              backgroundColor: "rgba(224, 49, 49, 0.1)",
-              border: "1px solid rgba(224, 49, 49, 0.3)",
+              backgroundColor: 'rgba(224, 49, 49, 0.1)',
+              border: '1px solid rgba(224, 49, 49, 0.3)',
             }}
           >
             <div className="flex items-start">
@@ -214,7 +265,7 @@ export default function LoginPage() {
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     id="password"
                     name="password"
                     value={formData.password}
@@ -238,26 +289,15 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* // TODO v2: Add reset password */}
-              {/* <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="mr-2 rounded border border-dark-border focus:ring-accent focus:ring-2 transition-colors h-4 w-4 text-accent bg-dark"
-                  />
-                  <span className="text-sm text-light-secondary">
-                    Remember me
-                  </span>
-                </label>
-                <a
-                  href="#"
+              <div className="flex justify-end mb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordModal(true)}
                   className="text-sm hover:opacity-70 transition-opacity text-accent"
                 >
                   Forgot password?
-                </a>
-              </div> */}
+                </button>
+              </div>
 
               {/* 5. Change button type to "submit" */}
               <button
@@ -265,13 +305,13 @@ export default function LoginPage() {
                 className="w-full font-semibold py-3 px-4 rounded-lg transition-colors hover:opacity-90 bg-accent text-light"
                 disabled={isLoading}
               >
-                {isLoading ? "Logging in..." : "Back to the Disaster"}
+                {isLoading ? 'Logging in...' : 'Back to the Disaster'}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-light-secondary">
-                New to professional disasters?{" "}
+                New to professional disasters?{' '}
                 <Link
                   href="/auth/signup"
                   className="font-medium hover:opacity-70 transition-opacity text-accent"
@@ -291,6 +331,95 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-dark-secondary border border-dark-border rounded-lg w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b border-dark-border">
+              <h3 className="text-lg font-semibold text-light">
+                Reset Your Password
+              </h3>
+              <button
+                onClick={resetForgotPasswordModal}
+                className="text-light-secondary hover:text-light transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {forgotPasswordSuccess ? (
+                <div className="text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
+                  <h4 className="text-lg font-medium text-light mb-2">
+                    Email Sent!
+                  </h4>
+                  <p className="text-sm text-light-secondary">
+                    If an account with that email exists, we've sent you a
+                    password reset link.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-light-secondary mb-4">
+                    Enter your email address and we'll send you a link to reset
+                    your password.
+                  </p>
+
+                  {forgotPasswordError && (
+                    <div className="mb-4 p-3 rounded-lg flex items-start bg-red-500/10 border border-red-500/20">
+                      <AlertCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-red-500" />
+                      <p className="text-sm text-red-500">
+                        {forgotPasswordError}
+                      </p>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleForgotPassword}>
+                    <div className="mb-4">
+                      <label
+                        htmlFor="forgotPasswordEmail"
+                        className="block text-sm font-medium mb-2 text-light"
+                      >
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        id="forgotPasswordEmail"
+                        value={forgotPasswordEmail}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light focus:border-accent focus:ring-1 focus:ring-accent"
+                        placeholder="Enter your email address"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={resetForgotPasswordModal}
+                        className="flex-1 py-3 px-4 rounded-lg transition-colors border border-dark-border text-light-secondary hover:bg-dark"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isForgotPasswordLoading}
+                        className="flex-1 font-semibold py-3 px-4 rounded-lg transition-colors hover:opacity-90 bg-accent text-light"
+                      >
+                        {isForgotPasswordLoading
+                          ? 'Sending...'
+                          : 'Send Reset Link'}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

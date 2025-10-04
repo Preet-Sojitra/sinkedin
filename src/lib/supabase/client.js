@@ -1,12 +1,21 @@
-// lib/supabase/client.js
-"use client" // Good practice to add this for clarity
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
-import { createBrowserClient } from "@supabase/ssr"
-
-// It's better to export a function for consistency, though a singleton works here.
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  if (typeof window === 'undefined') {
+    // Node / server context (API route or standalone script)
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) {
+      throw new Error('Missing SUPABASE_URL or SUPABASE_SECRET_KEY in env')
+    }
+    return createSupabaseClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SECRET_KEY,
+    )
+  } else {
+    // Browser / Next.js SSR context
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    )
+  }
 }

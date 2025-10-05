@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { useChatScroll } from '@/hooks/use-chat-scroll'
 import { Send, Smile } from 'lucide-react'
 import ChatInput from './input'
 import ChatMessageBox from './message'
@@ -10,11 +11,18 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
   const [message, setMessage] = useState('')
   const channelRef = useRef(null)
   const [prevMessages, setPrevMessages] = useState([])
+  const { containerRef, scrollToBottom } = useChatScroll()
+
+  useEffect(() => {
+    // Scroll to bottom whenever messages change
+    scrollToBottom()
+  }, [prevMessages.length, scrollToBottom])
 
   const getPreviousChats = async () => {
     // fetch from supabase table chats which has all the chat messages
 
     const room_id = [loggedInUser.id, otherUser.id].sort().join('_')
+    // console.log(room_id)
     const { data: messages, error } = await supabase
       .from('chats')
       .select('*')
@@ -25,7 +33,7 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
       console.log('Error in fetching the messages : ', error)
       return null
     }
-
+    console.log(messages)
     setPrevMessages(messages)
   }
 
@@ -108,7 +116,10 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
           </h2>
         </div>
 
-        <div className="h-96 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+        <div
+          ref={containerRef}
+          className="h-96 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+        >
           {prevMessages.map((msg) => (
             <div key={msg.id} className="group">
               <div className="flex items-start gap-3">

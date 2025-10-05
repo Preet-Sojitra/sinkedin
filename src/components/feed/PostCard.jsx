@@ -323,7 +323,7 @@ function Comment({ comment }) {
     <div className="flex items-start gap-3">
       <Link href={`/profile/${author.id}`} className="flex-shrink-0 mt-1">
         <Image
-          src={avatar_url || '/default_avatar.jpg'}
+          src={author?.avatar_url || '/default_avatar.jpg'}
           alt={`${author.username}'s avatar`}
           width={32}
           height={32}

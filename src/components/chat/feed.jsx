@@ -9,28 +9,6 @@ import supabase from '@/utils/supabase/client'
 export default function RealtimeChats({ loggedInUser, otherUser }) {
   const [message, setMessage] = useState('')
   const channelRef = useRef(null)
-
-  // let tempMessages = [
-  //   {
-  //     id: 1,
-  //     username: 'Alex Chen',
-  //     user_id : '1213f24',
-  //     room_id : '',
-  //     avatar_url: '',
-  //     text: 'Hey, did you get a chance to review the proposal?',
-  //     time: '2 minutes ago'
-  //   },
-  //   {
-  //     id: 2,
-  //     username: 'You',
-  //     user_id : '1213f2swfew4',
-  //     room_id : '',
-  //     avatar_url: '',
-  //     text: 'Just finished reading it. Looks solid overall!',
-  //     time: '1 minute ago'
-  //   }
-  // ]
-
   const [prevMessages, setPrevMessages] = useState([])
 
   const getPreviousChats = async () => {
@@ -41,15 +19,14 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
       .from('chats')
       .select('*')
       .eq('room_id', room_id)
-      .order('time')
+      .order('created_at')
 
     if (error) {
       console.log('Error in fetching the messages : ', error)
       return null
     }
 
-    // console.log(messages)
-    setMessage(messages)
+    setPrevMessages(messages)
   }
 
   const realtimeSubscription = () => {
@@ -65,12 +42,11 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
           table: 'chats',
         },
         (payload) => {
-          console.log(
-            `realtime subscription postgres_changes payload : ${payload}`,
-          )
-
           if (payload.eventType == 'INSERT') {
             // insert the new messsage in the payload in the prevMessages
+            if (payload.new.user_id != loggedInUser.id) {
+              setPrevMessages((prevMessages) => [...prevMessages, payload.new])
+            }
           }
         },
       )
@@ -98,24 +74,27 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
   }, [loggedInUser?.id])
 
   const handleSend = async () => {
-    if (message.trim()) {
+    if (typeof message == 'string' && message.trim()) {
       const newMessage = {
         // id: crypto.randomUUID,
         username: loggedInUser.username,
         user_id: loggedInUser.id,
         room_id: [loggedInUser.id, otherUser.id].sort().join('_'),
-        avatar_url: loggedInUser.avatar_url,
-        text: message,
+        avatar_url: loggedInUser.avatar_url || '/default_avatar.jpg',
+        text: message.trim(),
         time: new Date().toISOString(),
       }
 
-      // const {data , error} = await supabase.from('chat').insert(newMessage)
-      // if(error) {
-      //   console.log('Failed to send message' , error)
-      //   return
-      // }
-
-      setPrevMessages([...prevMessages, newMessage])
+      // console.log(newMessage)
+      const { data, error } = await supabase.from('chats').insert(newMessage)
+      if (error) {
+        console.log(
+          `Failed to send message. Received data as ${data}\nError:\n`,
+          error,
+        )
+        return
+      }
+      setPrevMessages((prevMessages) => [...prevMessages, newMessage])
       setMessage('')
     }
   }
@@ -151,7 +130,7 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
               </div>
               <button
                 onClick={handleSend}
-                disabled={!message.trim()}
+                disabled={typeof message != 'string' || !message.trim()}
                 className="bg-red-500 hover:bg-red-600 disabled:bg-gray-700 disabled:text-gray-500 text-white px-5 py-2 rounded font-medium text-sm transition-colors flex items-center gap-2 disabled:cursor-not-allowed"
               >
                 Send

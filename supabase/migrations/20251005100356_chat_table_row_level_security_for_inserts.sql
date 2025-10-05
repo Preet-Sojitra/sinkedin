@@ -3,7 +3,7 @@
 --
 
 -- 1. Enable RLS on the chats table
-alter table public.chat enable ROW LEVEL SECURITY;
+alter table public.chats enable ROW LEVEL SECURITY;
 
 -- 2. Create policy for INSERT (creating posts)
 -- This policy allows authenticated users to create posts

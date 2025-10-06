@@ -8,6 +8,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
 
+const FEED_CACHE_KEY = 'sinkedin_feed_cache'
+const SCROLL_POSITION_KEY = 'sinkedin_scroll_position'
+
 const fetchPosts = async (page) => {
   try {
     const response = await axios.get(`/api/post/all?page=${page}`)
@@ -26,8 +29,11 @@ export default function HomePage() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [isFetchingMore, setIsFetchingMore] = useState(false)
+  const [isRestoringFromCache, setIsRestoringFromCache] = useState(true)
 
   const observer = useRef()
+  const hasRestoredScroll = useRef(false)
+
   const lastPostElementRef = useCallback(
     (node) => {
       if (isLoading || isFetchingMore) return
@@ -57,10 +63,107 @@ export default function HomePage() {
     fetchUser()
   }, [])
 
+  // Effect to restore feed state from cache on mount
+  useEffect(() => {
+    try {
+      const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
+      if (cachedData) {
+        const {
+          posts: cachedPosts,
+          page: cachedPage,
+          hasMore: cachedHasMore,
+        } = JSON.parse(cachedData)
+        setPosts(cachedPosts)
+        setPage(cachedPage)
+        setHasMore(cachedHasMore)
+        setIsLoading(false)
+        setIsRestoringFromCache(false)
+      } else {
+        setIsRestoringFromCache(false)
+      }
+    } catch (error) {
+      console.error('Error restoring feed cache:', error)
+      setIsRestoringFromCache(false)
+    }
+  }, [])
+
+  // Effect to restore scroll position after posts are rendered
+  useEffect(() => {
+    if (!isLoading && posts.length > 0 && !hasRestoredScroll.current) {
+      try {
+        const savedScrollPosition = sessionStorage.getItem(SCROLL_POSITION_KEY)
+        if (savedScrollPosition) {
+          // Use setTimeout with requestAnimationFrame to ensure DOM is fully ready
+          // This handles both direct navigation and browser back button
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              window.scrollTo(0, parseInt(savedScrollPosition, 10))
+              hasRestoredScroll.current = true
+            })
+          }, 100)
+        }
+      } catch (error) {
+        console.error('Error restoring scroll position:', error)
+      }
+    }
+  }, [isLoading, posts])
+
+  // Override Next.js scroll restoration on mount
+  useEffect(() => {
+    // Prevent Next.js from scrolling to top on navigation
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+
+    return () => {
+      // Restore default behavior on unmount
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto'
+      }
+    }
+  }, [])
+
+  // Effect to save scroll position on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      try {
+        sessionStorage.setItem(SCROLL_POSITION_KEY, window.scrollY.toString())
+      } catch (error) {
+        console.error('Error saving scroll position:', error)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Effect to save feed state when it changes
+  useEffect(() => {
+    if (posts.length > 0) {
+      try {
+        const cacheData = {
+          posts,
+          page,
+          hasMore,
+          timestamp: Date.now(),
+        }
+        sessionStorage.setItem(FEED_CACHE_KEY, JSON.stringify(cacheData))
+      } catch (error) {
+        console.error('Error saving feed cache:', error)
+      }
+    }
+  }, [posts, page, hasMore])
+
   // Effect for fetching posts when page number changes
   useEffect(() => {
+    // Skip fetching if we're restoring from cache
+    if (isRestoringFromCache) return
+
+    // Skip if we already have cached posts for page 1
+    if (page === 1 && posts.length > 0) return
+
     // Prevent fetching if there are no more posts
-    if (!hasMore) return
+    if (!hasMore && page > 1) return
 
     const loadPosts = async () => {
       if (page === 1) {
@@ -74,7 +177,12 @@ export default function HomePage() {
 
       // Only update if we actually got new posts
       if (newPosts.length > 0) {
-        setPosts((prevPosts) => [...prevPosts, ...newPosts])
+        setPosts((prevPosts) => {
+          // Prevent duplicates
+          const existingIds = new Set(prevPosts.map((p) => p.id))
+          const uniqueNewPosts = newPosts.filter((p) => !existingIds.has(p.id))
+          return [...prevPosts, ...uniqueNewPosts]
+        })
       }
       setHasMore(newHasMore)
 
@@ -86,12 +194,21 @@ export default function HomePage() {
     }
 
     loadPosts()
-  }, [page]) // This effect runs whenever 'page' changes
+  }, [page, isRestoringFromCache]) // This effect runs whenever 'page' changes
 
   const handlePostCreated = (newPost) => {
     // This function will be called when a new post is created
     // You can update the posts state here to include the new post
     setPosts((prevPosts) => [newPost, ...prevPosts])
+
+    // Clear cache when new post is created to show it at the top
+    try {
+      sessionStorage.removeItem(FEED_CACHE_KEY)
+      sessionStorage.removeItem(SCROLL_POSITION_KEY)
+      hasRestoredScroll.current = false
+    } catch (error) {
+      console.error('Error clearing cache:', error)
+    }
   }
 
   return (

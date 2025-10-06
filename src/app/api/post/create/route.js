@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { Filter } from "bad-words"
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { Filter } from 'bad-words'
 
 // Initialize the bad words filter
 const filter = new Filter()
@@ -8,9 +8,9 @@ const filter = new Filter()
 const censorWord = (word) => {
   // Replace the word with asterisks, maintaining the original length
   if (word.length <= 2) {
-    return "*".repeat(word.length) // For short words, just asterisks
+    return '*'.repeat(word.length) // For short words, just asterisks
   }
-  return word[0] + "*".repeat(word.length - 2) + word[word.length - 1]
+  return word[0] + '*'.repeat(word.length - 2) + word[word.length - 1]
 }
 
 export async function POST(request) {
@@ -18,29 +18,29 @@ export async function POST(request) {
     const { content, isAnonymous } = await request.json()
 
     // Validate input
-    if (!content || content.trim() === "") {
+    if (!content || content.trim() === '') {
       return NextResponse.json(
-        { error: "Content cannot be empty." },
-        { status: 400 }
+        { error: 'Content cannot be empty.' },
+        { status: 400 },
       )
     }
 
     // We split the content into words, check each one, and then rejoin them.
     // This is more precise than a simple replace and handles punctuation better.
     const censoredContent = content
-      .split(" ")
+      .split(' ')
       .map((word) => (filter.isProfane(word) ? censorWord(word) : word))
-      .join(" ")
+      .join(' ')
 
     const supabase = await createClient()
     const { data: session, error: sessionError } = await supabase.auth.getUser()
     // console.log("Session data:", session)
 
     if (sessionError) {
-      console.error("Session error:", sessionError)
+      console.error('Session error:', sessionError)
       return NextResponse.json(
-        { error: "Failed to retrieve session." },
-        { status: 500 }
+        { error: 'Failed to retrieve session.' },
+        { status: 500 },
       )
     }
 
@@ -52,14 +52,14 @@ export async function POST(request) {
     // If the user is not authenticated and tries to post anonymously, return an error
     if (isAnonymous && !isAuthenticated) {
       return NextResponse.json(
-        { error: "You must be logged in to post anonymously." },
-        { status: 403 }
+        { error: 'You must be logged in to post anonymously.' },
+        { status: 403 },
       )
     }
 
     // Insert the post into the database
     const { data: post, error: postError } = await supabase
-      .from("posts")
+      .from('posts')
       .insert({
         user_id: userId,
         body: censoredContent.trim(),
@@ -69,16 +69,16 @@ export async function POST(request) {
       .single()
 
     if (postError || !post) {
-      console.error("Post insertion error:", postError)
+      console.error('Post insertion error:', postError)
       return NextResponse.json(
-        { error: "Failed to create post." },
-        { status: 500 }
+        { error: 'Failed to create post.' },
+        { status: 500 },
       )
     }
 
     // 2. Fetch the newly created post with all the joins and transformations. This is necessary as it will be needed to update the UI immediately after creation.
     const { data: fullPost, error: fetchError } = await supabase
-      .from("posts")
+      .from('posts')
       .select(
         `
         id,
@@ -96,17 +96,17 @@ export async function POST(request) {
           reaction,
           created_at
         )
-      `
+      `,
       )
-      .eq("id", post.id) // Filter to get only the post we just created
+      .eq('id', post.id) // Filter to get only the post we just created
       .single() // We expect only one result
 
     if (fetchError || !fullPost) {
-      console.error("Error fetching newly created post:", fetchError)
+      console.error('Error fetching newly created post:', fetchError)
       // You might want to handle this case, e.g., by deleting the orphaned post
       return NextResponse.json(
-        { error: "Post created, but failed to fetch its details." },
-        { status: 500 }
+        { error: 'Post created, but failed to fetch its details.' },
+        { status: 500 },
       )
     }
 
@@ -125,17 +125,17 @@ export async function POST(request) {
             avatar_url: fullPost.profiles?.avatar_url,
           },
       // A new post will have no reactions
-      reaction_counts: { F: 0, Clown: 0, Skull: 0, Relatable: 0 },
+      reaction_counts: { Laugh: 0, Clown: 0, Skull: 0, Relatable: 0 },
       reaction: [], // An empty array for reactions
     }
 
     // 4. Return the fully formed post object
     return NextResponse.json({ post: transformedPost }, { status: 201 })
   } catch (error) {
-    console.error("Error creating post:", error)
+    console.error('Error creating post:', error)
     return NextResponse.json(
-      { error: "Failed to create post." },
-      { status: 500 }
+      { error: 'Failed to create post.' },
+      { status: 500 },
     )
   }
 }

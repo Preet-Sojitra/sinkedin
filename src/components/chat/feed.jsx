@@ -6,12 +6,14 @@ import { Send, Smile } from 'lucide-react'
 import ChatInput from './input'
 import ChatMessageBox from './message'
 import supabase from '@/utils/supabase/client'
+import IsTypingComponent from './isTyping'
 
 export default function RealtimeChats({ loggedInUser, otherUser }) {
   const [message, setMessage] = useState('')
   const channelRef = useRef(null)
   const [prevMessages, setPrevMessages] = useState([])
   const { containerRef, scrollToBottom } = useChatScroll()
+  const [isUserTyping, setIsUserTyping] = useState(false)
 
   useEffect(() => {
     // Scroll to bottom whenever messages change
@@ -33,13 +35,19 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
       console.log('Error in fetching the messages : ', error)
       return null
     }
-    console.log(messages)
+    // console.log(messages)
     setPrevMessages(messages)
   }
 
   const realtimeSubscription = () => {
     const room_id = [loggedInUser.id, otherUser.id].sort().join('_')
-    const channel = supabase.channel(`chat-${room_id}`)
+    const channel = supabase.channel(`chat-${room_id}`, {
+      config: {
+        presence: {
+          key: loggedInUser.id,
+        },
+      },
+    })
 
     channel
       .on(
@@ -58,15 +66,42 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
           }
         },
       )
-      .subscribe((status) => {
+      .on('presence', { event: 'sync' }, () => {
+        const newState = channel.presenceState()
+        // console.log('sync', newState)
+
+        // take the name that has isTyping true and set isTyping state true
+        Object.keys(newState).forEach((key) => {
+          if (key == loggedInUser.id) return
+
+          let presence_obj = newState[key]
+          setIsUserTyping(presence_obj[0].isTyping)
+        })
+      })
+      .subscribe(async (status) => {
         if (status != 'subscribed') {
           return
         }
 
+        await channel.track({
+          online_at: new Date().toISOString(),
+          active: true,
+          isTyping: false,
+          name: loggedInUser.username,
+          id: loggedInUser.id,
+        })
         console.log(`Real time connection established in ${room_id}`)
       })
 
     return channel
+  }
+
+  const trackTyping = async (isTyping) => {
+    // console.log(isTyping)
+    await channelRef.current.track({
+      isTyping,
+      name: loggedInUser.username,
+    })
   }
 
   useEffect(() => {
@@ -130,8 +165,13 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
         </div>
 
         <div className="p-6 border-t border-gray-800">
+          {isUserTyping && <IsTypingComponent />}
           <div className="bg-gray-800 rounded-2xl border border-gray-700 focus-within:border-gray-600 transition-colors">
-            <ChatInput message={message} setMessage={setMessage} />
+            <ChatInput
+              message={message}
+              setMessage={setMessage}
+              trackTyping={trackTyping}
+            />
 
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-700">
               <div className="flex gap-2">

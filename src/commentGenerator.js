@@ -1,31 +1,27 @@
-import OpenAI from 'openai'
-console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY)
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+console.log('GOOGLE_API_KEY:', process.env.GOOGLE_API_KEY)
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY)
+
+const model = genAI.getGenerativeModel({
+  model: 'gemini-2.5-flash',
+  systemInstruction: `You are SinkedinOfficialBot. Sinkedin is a LinkedIn alternative for flaunting failures, job rejections, and embarrassments. Your task is to make fun of or roast the content the user has posted by creating a comment. Keep the comment concise—not too long, not too short.`,
 })
 
 export async function generateComment(postBody) {
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a witty, funny, and slightly sarcastic bot.',
-        },
-        {
-          role: 'user',
-          content: `Generate a witty or humorous comment for this post: "${postBody}"`,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 60,
-    })
+    const generationConfig = {
+      temperature: 0.8,
+      maxOutputTokens: 80,
+    }
 
-    return response.choices[0].message.content.trim()
+    const result = await model.generateContent(postBody, generationConfig)
+
+    const response = result.response
+    return response.text().trim()
   } catch (error) {
-    console.error('Error generating comment:', error)
+    console.error('Error generating comment with Gemini:', error)
     return "Couldn't generate a comment."
   }
 }

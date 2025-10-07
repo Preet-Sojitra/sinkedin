@@ -180,7 +180,7 @@ export async function POST(request) {
             avatar_url: fullPost.profiles?.avatar_url,
           },
       // A new post will have no reactions
-      reaction_counts: { F: 0, Clown: 0, Skull: 0, Relatable: 0 },
+      reaction_counts: { Laugh: 0, Clown: 0, Skull: 0, Relatable: 0 },
       reaction: [], // An empty array for reactions
     }
 

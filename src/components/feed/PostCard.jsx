@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
@@ -131,6 +131,79 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
 
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
 
+  const reactionToGifMap = {
+    Laugh: '/laugh.gif',
+    Clown: '/clown.gif',
+    Skull: '/skull.gif',
+    Relatable: '/relatable.gif',
+  }
+
+  // ReactionEmojiButton: shows emoji normally, GIF on hover or on click (for touch)
+  function ReactionEmojiButton({
+    emojiName,
+    emojiChar,
+    gifUrl,
+    count,
+    selected,
+    onClick,
+  }) {
+    const [hovered, setHovered] = useState(false)
+    const [clicked, setClicked] = useState(false)
+    const clickTimerRef = useRef(null)
+
+    useEffect(() => {
+      return () => {
+        if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+      }
+    }, [])
+
+    const handleMouseEnter = () => setHovered(true)
+    const handleMouseLeave = () => setHovered(false)
+
+    const handlePress = (e) => {
+      // keep original onClick behavior (which will call your API)
+      onClick && onClick(e)
+
+      // show animation briefly after click — good for mobile
+      setClicked(true)
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = setTimeout(() => {
+        setClicked(false)
+      }, 1500) // show gif for 1.5s after click
+    }
+
+    const showGif = hovered || clicked
+
+    return (
+      <button
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handlePress}
+        aria-pressed={selected}
+        title={emojiName}
+        className={`flex items-center gap-2 text-light-secondary text-sm duration-200 ${
+          selected ? 'bg-white/10 text-light p-1 rounded-md' : ''
+        }`}
+        // keep appearance identical to previous buttons
+      >
+        <span className="flex items-center justify-center w-[1.375rem] h-[1.375rem]">
+          {showGif && gifUrl ? (
+            // plain <img> — avoid next/image for external GIFs
+            <img
+              src={gifUrl}
+              alt={`${emojiName} animation`}
+              className="w-[1.5rem] h-[1.5rem] object-contain pointer-events-none"
+              draggable={false}
+            />
+          ) : (
+            <span className="text-xl select-none">{emojiChar}</span>
+          )}
+        </span>
+        <span className="font-medium">{count}</span>
+      </button>
+    )
+  }
+
   return (
     <article className="bg-dark-secondary border border-dark-border rounded-lg px-5 py-6 md:p-6">
       {/* Post Header: Avatar and Author Info */}
@@ -176,18 +249,18 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
         <div className="flex gap-4 pt-5 pl-3 flex-wrap">
           {Object.entries(counts).map(([emojiName, count]) => {
             const emoji = reactionToEmojiMap[emojiName] || emojiName
+            const gif = reactionToGifMap[emojiName]
             const hasReacted = reactedEmoji === emojiName
             return (
-              <button
+              <ReactionEmojiButton
                 key={emojiName}
-                className={`flex items-center gap-2 text-light-secondary text-sm duration-200 ${
-                  hasReacted ? 'bg-white/10 text-light p-1 rounded-md' : ''
-                }`}
+                emojiName={emojiName}
+                emojiChar={emoji}
+                gifUrl={gif}
+                count={count}
+                selected={hasReacted}
                 onClick={() => handleReactionClick(emojiName)}
-              >
-                <span className="text-xl">{emoji}</span>
-                <span className="font-medium">{count}</span>
-              </button>
+              />
             )
           })}
 

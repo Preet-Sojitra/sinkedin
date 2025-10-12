@@ -1,56 +1,56 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Camera, RefreshCw, ArrowRight } from "lucide-react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { createClient } from "@/lib/supabase/client"
-import axios from "axios"
+import { useState, useEffect } from 'react'
+import { Camera, RefreshCw, ArrowRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
+import axios from 'axios'
 
 export default function Page() {
   const router = useRouter()
-  const [username, setUsername] = useState("")
+  const [username, setUsername] = useState('')
   const [headline, setHeadline] = useState(null)
   const [bio, setBio] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [avatarFile, setAvatarFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showError, setShowError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState('')
 
   // Generate random usernames for fun
   const randomUsernamesBase = [
-    "EpicFailAlchemist",
-    "ChiefMishapOfficer",
-    "GrandMasterOfGoofs",
-    "RejectRonin",
-    "InterviewPhantom",
-    "CareerComedian",
-    "ChaosCoordinator",
-    "MisfortuneMaven",
-    "SetbackSamurai",
-    "BlunderBaron",
-    "ReplyAllRegret",
-    "CtrlAltDefeated",
-    "DeadlineDemon",
-    "ZoomMuteVictim",
-    "CoffeeSpillPro",
-    "ImposterSyndromeIncarnate",
-    "BurntOutBard",
-    "JustAnotherLayoff",
-    "The404Employee",
-    "VoidStaringChampion",
-    "AbyssLooker",
-    "SirFailsALot",
-    "MissTakesAllowed",
-    "CubicleCthulhu",
-    "HRsNightmareFuel",
-    "EndOfQuarterEntity",
-    "TheGhostOfInterviewsPast",
-    "ResumeBlackHole",
-    "LinkedInLiarRehab",
-    "HopeCrusher",
-    "TheOptimismExtinguisher",
+    'EpicFailAlchemist',
+    'ChiefMishapOfficer',
+    'GrandMasterOfGoofs',
+    'RejectRonin',
+    'InterviewPhantom',
+    'CareerComedian',
+    'ChaosCoordinator',
+    'MisfortuneMaven',
+    'SetbackSamurai',
+    'BlunderBaron',
+    'ReplyAllRegret',
+    'CtrlAltDefeated',
+    'DeadlineDemon',
+    'ZoomMuteVictim',
+    'CoffeeSpillPro',
+    'ImposterSyndromeIncarnate',
+    'BurntOutBard',
+    'JustAnotherLayoff',
+    'The404Employee',
+    'VoidStaringChampion',
+    'AbyssLooker',
+    'SirFailsALot',
+    'MissTakesAllowed',
+    'CubicleCthulhu',
+    'HRsNightmareFuel',
+    'EndOfQuarterEntity',
+    'TheGhostOfInterviewsPast',
+    'ResumeBlackHole',
+    'LinkedInLiarRehab',
+    'HopeCrusher',
+    'TheOptimismExtinguisher',
   ]
 
   const generateRandomUsername = () => {
@@ -60,7 +60,7 @@ export default function Page() {
       ]
     // Generate three numbers to append
     const randomDigits = Math.floor(Math.random() * 1000)
-    const randomName = `${baseName}${randomDigits.toString().padStart(3, "0")}`
+    const randomName = `${baseName}${randomDigits.toString().padStart(3, '0')}`
     setUsername(randomName)
   }
 
@@ -87,22 +87,22 @@ export default function Page() {
     // Validate required fields
     if (!username) {
       setShowError(true)
-      setErrorMessage("Username is required")
+      setErrorMessage('Username is required')
       return
     }
     if (username.length < 3 || username.length > 50) {
       setShowError(true)
-      setErrorMessage("Username must be between 3 and 50 characters")
+      setErrorMessage('Username must be between 3 and 50 characters')
       return
     }
     if (headline && headline.length > 100) {
       setShowError(true)
-      setErrorMessage("Headline must be less than 100 characters")
+      setErrorMessage('Headline must be less than 100 characters')
       return
     }
     if (bio && bio.length > 200) {
       setShowError(true)
-      setErrorMessage("Bio must be less than 200 characters")
+      setErrorMessage('Bio must be less than 200 characters')
       return
     }
 
@@ -116,9 +116,9 @@ export default function Page() {
 
     if (userError || !user) {
       setShowError(true)
-      setErrorMessage("You must be logged in to create a profile")
+      setErrorMessage('You must be logged in to create a profile')
       setLoading(false)
-      router.replace("/auth/login")
+      router.replace('/auth/login')
       return
     }
 
@@ -127,36 +127,36 @@ export default function Page() {
     if (avatarFile) {
       // Check if the file is an image and under 5MB
       if (
-        !avatarFile.type.startsWith("image/") ||
+        !avatarFile.type.startsWith('image/') ||
         avatarFile.size > 5 * 1024 * 1024
       ) {
         setShowError(true)
-        setErrorMessage("Please upload a valid image under 5MB")
+        setErrorMessage('Please upload a valid image under 5MB')
         setLoading(false)
         return
       }
       // Create a unique filename
-      const fileExt = avatarFile.name.split(".").pop()
+      const fileExt = avatarFile.name.split('.').pop()
       const fileName = `${Date.now()}.${fileExt}`
       const filePath = `${user.id}/${fileName}`
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("avatars")
+        .from('avatars')
         .upload(filePath, avatarFile)
       if (uploadError) {
         setShowError(true)
-        setErrorMessage("Failed to upload avatar image")
-        console.error("Avatar upload error:", uploadError)
+        setErrorMessage('Failed to upload avatar image')
+        console.error('Avatar upload error:', uploadError)
         setLoading(false)
         return
       }
       // Get the public URL of the uploaded image
       const { data } = supabase.storage
-        .from("avatars")
+        .from('avatars')
         .getPublicUrl(uploadData.path)
 
       if (!data.publicUrl) {
         setShowError(true)
-        setErrorMessage("Failed to get avatar URL.")
+        setErrorMessage('Failed to get avatar URL.')
         setLoading(false)
         return
       }
@@ -165,7 +165,7 @@ export default function Page() {
 
     // Send all data to the server
     try {
-      const response = await axios.post("/api/profile/create", {
+      const response = await axios.post('/api/profile/create', {
         id: user.id, // Ensure user ID is sent
         username,
         headline,
@@ -175,15 +175,15 @@ export default function Page() {
 
       if (response.status === 201) {
         // Redirect to the main app or profile page
-        router.replace("/feed")
+        router.replace('/feed')
       } else {
         setShowError(true)
-        setErrorMessage("Failed to create profile")
+        setErrorMessage('Failed to create profile')
       }
     } catch (error) {
-      console.error("Error creating profile:", error)
+      console.error('Error creating profile:', error)
       setShowError(true)
-      setErrorMessage("An error occurred while creating your profile")
+      setErrorMessage('An error occurred while creating your profile')
     } finally {
       setLoading(false)
     }
@@ -194,7 +194,7 @@ export default function Page() {
     // take default username and send request to create profile
     setLoading(true)
     setShowError(false)
-    setErrorMessage("")
+    setErrorMessage('')
     const supabase = createClient()
     const {
       data: { user },
@@ -202,32 +202,32 @@ export default function Page() {
     } = await supabase.auth.getUser()
     if (userError || !user) {
       setShowError(true)
-      setErrorMessage("You must be logged in to create a profile")
+      setErrorMessage('You must be logged in to create a profile')
       setLoading(false)
-      router.replace("/auth/login")
+      router.replace('/auth/login')
       return
     }
 
     try {
-      const response = await axios.post("/api/profile/create", {
+      const response = await axios.post('/api/profile/create', {
         id: user.id,
         username: username
           ? username
           : `User${Math.floor(Math.random() * 1000)}`,
-        headline: "",
-        bio: "",
+        headline: '',
+        bio: '',
         avatar: null, // No avatar for skipped setup
       })
       if (response.status === 201) {
-        router.replace("/feed") // Assuming this is the main app route
+        router.replace('/feed') // Assuming this is the main app route
       } else {
         setShowError(true)
-        setErrorMessage("Failed to create profile with default values")
+        setErrorMessage('Failed to create profile with default values')
       }
     } catch (error) {
-      console.error("Error creating default profile:", error)
+      console.error('Error creating default profile:', error)
       setShowError(true)
-      setErrorMessage("An error occurred while creating your default profile")
+      setErrorMessage('An error occurred while creating your default profile')
     } finally {
       setLoading(false)
     }
@@ -297,7 +297,7 @@ export default function Page() {
           {/* Username Section */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2 text-light">
-              Username{" "}
+              Username{' '}
               <span className="text-xs text-light-secondary">(required)</span>
             </label>
             <div className="flex gap-2">
@@ -307,10 +307,10 @@ export default function Page() {
                 onChange={(e) => setUsername(e.target.value)}
                 className="flex-1 px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light"
                 onFocus={(e) =>
-                  (e.target.style.borderColor = "var(--color-accent)")
+                  (e.target.style.borderColor = 'var(--color-accent)')
                 }
                 onBlur={(e) =>
-                  (e.target.style.borderColor = "var(--color-dark-border)")
+                  (e.target.style.borderColor = 'var(--color-dark-border)')
                 }
               />
               <button
@@ -332,14 +332,14 @@ export default function Page() {
             </label>
             <input
               type="text"
-              value={headline ? headline : ""}
+              value={headline ? headline : ''}
               onChange={(e) => setHeadline(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light"
               onFocus={(e) =>
-                (e.target.style.borderColor = "var(--color-accent)")
+                (e.target.style.borderColor = 'var(--color-accent)')
               }
               onBlur={(e) =>
-                (e.target.style.borderColor = "var(--color-dark-border)")
+                (e.target.style.borderColor = 'var(--color-dark-border)')
               }
               placeholder="The TL;DR of Your Downfall"
               maxLength={100}
@@ -354,15 +354,15 @@ export default function Page() {
               Flaunt Your Failures (Bio)
             </label>
             <textarea
-              value={bio ? bio : ""}
+              value={bio ? bio : ''}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
               className="w-full px-4 py-3 rounded-lg border outline-none transition-colors resize-none bg-dark border-dark-border text-light"
               onFocus={(e) =>
-                (e.target.style.borderColor = "var(--color-accent)")
+                (e.target.style.borderColor = 'var(--color-accent)')
               }
               onBlur={(e) =>
-                (e.target.style.borderColor = "var(--color-dark-border)")
+                (e.target.style.borderColor = 'var(--color-dark-border)')
               }
               placeholder="Detail your descent into career chaos. Give us the gory details. What went spectacularly wrong? e.g., 'That time I accidentally set off the fire alarm during a board meeting..."
               maxLength={200}
@@ -375,14 +375,14 @@ export default function Page() {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleSubmit}
-              className="flex-1 px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity bg-accent text-light"
+              className="flex-1 px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity bg-accent text-primary-foreground"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="loader"></span> Creating Profile...
                 </span>
               ) : (
-                "Create Profile"
+                'Create Profile'
               )}
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -396,7 +396,7 @@ export default function Page() {
                   <span className="loader"></span> Skipping...
                 </span>
               ) : (
-                "Skip for Now"
+                'Skip for Now'
               )}
               <ArrowRight className="w-5 h-5" />
             </button>

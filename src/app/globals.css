@@ -1,33 +1,117 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-@theme {
-  --color-dark: #0d1117;
-  --color-dark-secondary: #161b22;
-  --color-light: #e6edf3;
-  --color-light-secondary: #8b949e;
-  --color-accent: #e03131;
-  --color-accent-hover: #d12929;
-  --color-dark-border: #30363d;
+/* Consolidated dark theme variables (matches live screenshots) */
+:root {
+  /* Core */
+  --background: #0b0f14; /* page background */
+  --foreground: #e6edf3; /* main text */
+  --muted: #8b949e; /* secondary text */
+
+  /* Surfaces */
+  --card: #161b22; /* panels / cards */
+  --border: #30363d; /* borders */
+
+  /* Accent */
+  --accent: #e03131; /* red accent */
+  --accent-hover: #d12929; /* accent hover */
+
+  /* Button/primary text */
+  --primary: #e03131;
+  --primary-foreground: #ffffff;
+
+  /* Legacy aliases (some components use older names) */
+  --color-dark: var(--background);
+  --color-dark-secondary: var(--card);
+  --color-light: var(--foreground);
+  --color-light-secondary: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-dark-border: var(--border);
 }
 
-/* Sinkedin Color Palette */
-:root {
-  --color-accent: #e03131;
-  --color-dark: #0d1117;
-  --color-dark-secondary: #161b22;
-  --color-light: #e6edf3;
-  --color-light-secondary: #8b949e;
-  --color-dark-border: #30363d;
+/* Light theme overrides (applied when <html class="light">) */
+.light {
+  --background: #ffffff;
+  --foreground: #0b0f14;
+  --muted: #6b7280;
+  --card: #f6f7fa;
+  --border: #e6e9ee;
+  --accent: #e03131; /* keep accent red */
+  --accent-hover: #d12929;
+  --primary-foreground: #ffffff;
+}
+
+/* Light-mode compatibility helpers for existing utility classes */
+.light .text-light {
+  color: var(--foreground) !important;
+}
+.light .text-light-secondary {
+  color: var(--muted) !important;
+}
+.light .text-gray-300 {
+  color: var(--muted) !important;
+}
+.light .text-gray-500 {
+  color: var(--muted) !important;
+}
+.light .bg-dark {
+  background-color: var(--card) !important;
+}
+.light .bg-dark-secondary {
+  background-color: var(--card) !important;
+}
+.light .border-dark-border {
+  border-color: var(--border) !important;
+}
+.light .border-dark-border,
+.light .border-dark-border * {
+  color: inherit;
+}
+.light .bg-accent {
+  background-color: var(--accent) !important;
+}
+.light .btn-accent {
+  background-color: var(--accent) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Body uses the theme variables */
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background-color: var(--color-dark);
-  color: var(--color-light);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 strike {
   text-decoration: line-through;
+}
+
+/* Small utility: make accent buttons consistent when authors used text-white */
+.btn-accent {
+  background-color: var(--accent) !important;
+  color: var(--primary-foreground) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+}
+.btn-accent:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+/* Utility class to enforce accent color on elements that use bg-accent */
+.bg-accent {
+  background-color: var(--accent) !important;
+}
+.bg-accent:hover {
+  background-color: var(--accent-hover) !important;
 }

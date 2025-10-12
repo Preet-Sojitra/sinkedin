@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { Briefcase, Users, MessageSquare, TrendingUp } from "lucide-react"
+import Link from 'next/link'
+import { Briefcase, Users, MessageSquare, TrendingUp } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -19,13 +19,13 @@ export default function Home() {
               </p>
               <p className="text-gray-300 mb-8 text-lg">
                 Job hunt got you feeling like a melted candle? LinkedIn feed
-                look like a parade of humblebrags you can't relate to?{" "}
+                look like a parade of humblebrags you can't relate to?{' '}
                 <b>Welcome home.</b>
               </p>
               <div className="space-y-2 space-x-4 lg:space-y-0 lg:flex lg:space-x-4">
                 <Link
                   href="/auth/signup"
-                  className="bg-accent hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
+                  className="bg-accent hover:bg-red-700 text-primary-foreground px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
                 >
                   Join the Disaster
                 </Link>
@@ -39,11 +39,11 @@ export default function Home() {
             </div>
             <div className="md:w-1/2">
               {/* Warning Box */}
-              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6">
+              <div className="bg-[color:var(--accent)/0.12] border border-[color:var(--accent)/0.24] rounded-lg p-6">
                 <div className="flex items-start">
                   <div className="text-accent mr-3 mt-1">⚠️</div>
                   <div>
-                    <h3 className="text-red-400 font-semibold mb-2">
+                    <h3 className="text-[color:var(--accent)] font-semibold mb-2">
                       Fair Warning
                     </h3>
                     <p className="text-gray-300 text-sm leading-relaxed">
@@ -66,7 +66,7 @@ export default function Home() {
       <section className="py-20 bg-dark">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-16 text-light">
-            Why Choose{" "}
+            Why Choose{' '}
             <span className="text-light">
               S<strike className="text-accent no-underline">in</strike>kedIn
             </span>
@@ -108,7 +108,7 @@ export default function Home() {
           </p>
           <Link
             href="/auth/signup"
-            className="bg-accent hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
+            className="bg-accent hover:bg-red-700 text-primary-foreground px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
           >
             Start Your Downfall
           </Link>

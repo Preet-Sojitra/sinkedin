@@ -173,7 +173,7 @@ export default function ComposePost({ onPostCreated }) {
           </label>
         </div>
         <button
-          className={`bg-accent text-white border-none px-6 py-[0.4rem] md:py-[0.7rem] rounded-md font-semibold transition-colors duration-200 hover:bg-accent-hover ${
+          className={`bg-accent text-primary-foreground border-none px-6 py-[0.4rem] md:py-[0.7rem] rounded-md font-semibold transition-colors duration-200 hover:bg-accent-hover ${
             isAuthenticated
               ? 'cursor-pointer hover:bg-accent-hover'
               : 'cursor-not-allowed bg-light-secondary '

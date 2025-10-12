@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import NotificationBell from './notifications/NotificationBell'
+import ThemeToggleButton from './ThemeToggleButton'
 import { useUser } from '@/contexts/UserContext'
 
 export default function Header() {
@@ -22,6 +23,8 @@ export default function Header() {
         <div className="flex items-center gap-4">
           {/* We add the bell here. It will only show for logged-in users once we add logic */}
           {profile && <NotificationBell />}
+
+          <ThemeToggleButton />
 
           {isLoading ? (
             <div className="w-[40px] h-[40px] bg-dark-border rounded-full animate-pulse" />
@@ -44,7 +47,7 @@ export default function Header() {
               className="text-light no-underline"
               scroll={false}
             >
-              <button className="bg-accent text-white border-none px-4 py-2 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors">
+              <button className="bg-accent text-primary-foreground border-none px-4 py-2 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors">
                 Login
               </button>
             </Link>

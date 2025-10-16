@@ -142,6 +142,13 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
     }
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-3xl bg-dark-secondary border border-dark-border rounded-lg ">
@@ -171,6 +178,7 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
               message={message}
               setMessage={setMessage}
               trackTyping={trackTyping}
+              handleKeyDown={handleKeyDown}
             />
 
             <div className="flex items-center justify-between px-4 py-3 border-t border-gray-700">

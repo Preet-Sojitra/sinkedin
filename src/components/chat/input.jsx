@@ -2,7 +2,12 @@
 
 import { useRef } from 'react'
 
-export default function ChatInput({ message, setMessage, trackTyping }) {
+export default function ChatInput({
+  message,
+  setMessage,
+  trackTyping,
+  handleKeyDown,
+}) {
   const istypingRef = useRef(null)
   const typingTimeoutRef = useRef(null)
 
@@ -21,13 +26,6 @@ export default function ChatInput({ message, setMessage, trackTyping }) {
       istypingRef.current = false
       await trackTyping(false)
     }, 2000)
-  }
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
   }
 
   return (

@@ -162,8 +162,8 @@ export default function RealtimeChats({ loggedInUser, otherUser }) {
           ref={containerRef}
           className="h-96 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
         >
-          {prevMessages.map((msg) => (
-            <div key={msg.id} className="group">
+          {prevMessages.map((msg, idx) => (
+            <div key={idx} className="group">
               <div className="flex items-start gap-3">
                 <ChatMessageBox msg={msg} />
               </div>

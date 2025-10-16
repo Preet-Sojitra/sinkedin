@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import Image from 'next/image'
-import NotificationBell from './notifications/NotificationBell'
-import ThemeToggleButton from './ThemeToggleButton'
-import { useUser } from '@/contexts/UserContext'
+import Link from "next/link";
+import Image from "next/image";
+import NotificationBell from "./notifications/NotificationBell";
+import ThemeToggleButton from "./ThemeToggleButton";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Header() {
-  const { profile, isLoading } = useUser()
+  const { profile, isLoading } = useUser();
 
   return (
     <header className="bg-dark-secondary border-b border-dark-border px-0 py-3 sticky top-0 z-50">
@@ -29,24 +29,16 @@ export default function Header() {
           {isLoading ? (
             <div className="w-[40px] h-[40px] bg-dark-border rounded-full animate-pulse" />
           ) : profile ? (
-            <Link
-              href="/profile"
-              className="w-[40px] h-[40px] relative"
-              scroll={false}
-            >
+            <Link href="/profile" className="w-[40px] h-[40px] relative" scroll={false}>
               <Image
-                src={profile.avatar_url || '/default_avatar.jpg'}
+                src={profile.avatar_url || "/default_avatar.jpg"}
                 alt="Profile Icon"
                 fill
                 className="rounded-full object-cover"
               />
             </Link>
           ) : (
-            <Link
-              href="/auth/login"
-              className="text-light no-underline"
-              scroll={false}
-            >
+            <Link href="/auth/login" className="text-light no-underline" scroll={false}>
               <button className="bg-accent text-primary-foreground border-none px-4 py-2 rounded-md font-semibold text-sm hover:bg-accent-hover transition-colors">
                 Login
               </button>
@@ -55,5 +47,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Briefcase, Users, MessageSquare, TrendingUp } from 'lucide-react'
+import Link from "next/link";
+import { Briefcase, Users, MessageSquare, TrendingUp } from "lucide-react";
 
 export default function Home() {
   return (
@@ -18,9 +18,8 @@ export default function Home() {
                 Linkedin's Darker, Funnier and More Honest Cousin
               </p>
               <p className="text-gray-300 mb-8 text-lg">
-                Job hunt got you feeling like a melted candle? LinkedIn feed
-                look like a parade of humblebrags you can't relate to?{' '}
-                <b>Welcome home.</b>
+                Job hunt got you feeling like a melted candle? LinkedIn feed look like a parade of
+                humblebrags you can't relate to? " "<b>Welcome home.</b>
               </p>
               <div className="space-y-2 space-x-4 lg:space-y-0 lg:flex lg:space-x-4">
                 <Link
@@ -43,16 +42,13 @@ export default function Home() {
                 <div className="flex items-start">
                   <div className="text-accent mr-3 mt-1">⚠️</div>
                   <div>
-                    <h3 className="text-[color:var(--accent)] font-semibold mb-2">
-                      Fair Warning
-                    </h3>
+                    <h3 className="text-[color:var(--accent)] font-semibold mb-2">Fair Warning</h3>
                     <p className="text-gray-300 text-sm leading-relaxed">
-                      This is the anti-LinkedIn. We swap horror stories, not
-                      business cards. Expect dark humor, zero sugar-coating, and
-                      a healthy dose of schadenfreude. If you're looking for
-                      motivational pep talks, you've taken a wrong turn at
-                      Albuquerque. LinkedIn is down the hall, to the left, next
-                      to the crushing existential dread.
+                      This is the anti-LinkedIn. We swap horror stories, not business cards. Expect
+                      dark humor, zero sugar-coating, and a healthy dose of schadenfreude. If you're
+                      looking for motivational pep talks, you've taken a wrong turn at Albuquerque.
+                      LinkedIn is down the hall, to the left, next to the crushing existential
+                      dread.
                     </p>
                   </div>
                 </div>
@@ -66,7 +62,7 @@ export default function Home() {
       <section className="py-20 bg-dark">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-16 text-light">
-            Why Choose{' '}
+            Why Choose{" "}
             <span className="text-light">
               S<strike className="text-accent no-underline">in</strike>kedIn
             </span>
@@ -99,12 +95,10 @@ export default function Home() {
       {/* Call to Action Section */}
       <section className="py-20 bg-dark-secondary border-t border-dark-border">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-6 text-light">
-            Ready to Embrace the Chaos?
-          </h2>
+          <h2 className="text-4xl font-bold mb-6 text-light">Ready to Embrace the Chaos?</h2>
           <p className="text-light-secondary text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of professionals who've given up on maintaining a
-            perfect image. It's time to get real about your career disasters.
+            Join thousands of professionals who've given up on maintaining a perfect image. It's
+            time to get real about your career disasters.
           </p>
           <Link
             href="/auth/signup"
@@ -115,7 +109,7 @@ export default function Home() {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
 function FeatureCard({ icon, title, description }) {
@@ -125,5 +119,5 @@ function FeatureCard({ icon, title, description }) {
       <h3 className="text-light text-xl font-semibold mb-3">{title}</h3>
       <p className="text-light-secondary">{description}</p>
     </div>
-  )
+  );
 }

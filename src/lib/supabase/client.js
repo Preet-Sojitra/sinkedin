@@ -1,15 +1,12 @@
 // lib/supabase/client.js
-'use client'
+"use client";
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient } from "@supabase/ssr";
 
 // Export a factory that either returns a real client when envs are present,
 // or a safe stub for local/dev usage when they're not.
 export function createClient() {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return {
       auth: {
         getUser: async () => ({ data: { user: null }, error: null }),
@@ -21,11 +18,11 @@ export function createClient() {
         signIn: async () => ({ data: { user: null }, error: null }),
       },
       from: () => ({ select: async () => ({ data: [], error: null }) }),
-    }
+    };
   }
 
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  )
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
 }

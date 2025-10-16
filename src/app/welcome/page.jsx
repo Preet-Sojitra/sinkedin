@@ -1,237 +1,227 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Camera, RefreshCw, ArrowRight } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import { createClient } from '@/lib/supabase/client'
-import axios from 'axios'
+import { useState, useEffect } from "react";
+import { Camera, RefreshCw, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
+import axios from "axios";
 
 export default function Page() {
-  const router = useRouter()
-  const [username, setUsername] = useState('')
-  const [headline, setHeadline] = useState(null)
-  const [bio, setBio] = useState(null)
-  const [avatarPreview, setAvatarPreview] = useState(null)
-  const [avatarFile, setAvatarFile] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [showError, setShowError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [headline, setHeadline] = useState(null);
+  const [bio, setBio] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Generate random usernames for fun
   const randomUsernamesBase = [
-    'EpicFailAlchemist',
-    'ChiefMishapOfficer',
-    'GrandMasterOfGoofs',
-    'RejectRonin',
-    'InterviewPhantom',
-    'CareerComedian',
-    'ChaosCoordinator',
-    'MisfortuneMaven',
-    'SetbackSamurai',
-    'BlunderBaron',
-    'ReplyAllRegret',
-    'CtrlAltDefeated',
-    'DeadlineDemon',
-    'ZoomMuteVictim',
-    'CoffeeSpillPro',
-    'ImposterSyndromeIncarnate',
-    'BurntOutBard',
-    'JustAnotherLayoff',
-    'The404Employee',
-    'VoidStaringChampion',
-    'AbyssLooker',
-    'SirFailsALot',
-    'MissTakesAllowed',
-    'CubicleCthulhu',
-    'HRsNightmareFuel',
-    'EndOfQuarterEntity',
-    'TheGhostOfInterviewsPast',
-    'ResumeBlackHole',
-    'LinkedInLiarRehab',
-    'HopeCrusher',
-    'TheOptimismExtinguisher',
-  ]
+    "EpicFailAlchemist",
+    "ChiefMishapOfficer",
+    "GrandMasterOfGoofs",
+    "RejectRonin",
+    "InterviewPhantom",
+    "CareerComedian",
+    "ChaosCoordinator",
+    "MisfortuneMaven",
+    "SetbackSamurai",
+    "BlunderBaron",
+    "ReplyAllRegret",
+    "CtrlAltDefeated",
+    "DeadlineDemon",
+    "ZoomMuteVictim",
+    "CoffeeSpillPro",
+    "ImposterSyndromeIncarnate",
+    "BurntOutBard",
+    "JustAnotherLayoff",
+    "The404Employee",
+    "VoidStaringChampion",
+    "AbyssLooker",
+    "SirFailsALot",
+    "MissTakesAllowed",
+    "CubicleCthulhu",
+    "HRsNightmareFuel",
+    "EndOfQuarterEntity",
+    "TheGhostOfInterviewsPast",
+    "ResumeBlackHole",
+    "LinkedInLiarRehab",
+    "HopeCrusher",
+    "TheOptimismExtinguisher",
+  ];
 
   const generateRandomUsername = () => {
-    const baseName =
-      randomUsernamesBase[
-        Math.floor(Math.random() * randomUsernamesBase.length)
-      ]
+    const baseName = randomUsernamesBase[Math.floor(Math.random() * randomUsernamesBase.length)];
     // Generate three numbers to append
-    const randomDigits = Math.floor(Math.random() * 1000)
-    const randomName = `${baseName}${randomDigits.toString().padStart(3, '0')}`
-    setUsername(randomName)
-  }
+    const randomDigits = Math.floor(Math.random() * 1000);
+    const randomName = `${baseName}${randomDigits.toString().padStart(3, "0")}`;
+    setUsername(randomName);
+  };
 
   useEffect(() => {
     // Generate a random username when the component mounts
-    generateRandomUsername()
-  }, [])
+    generateRandomUsername();
+  }, []);
 
   const handleAvatarUpload = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      setAvatarFile(file)
+      setAvatarFile(file);
 
       // Create a preview of the uploaded image
-      const reader = new FileReader()
-      reader.onload = (e) => setAvatarPreview(e.target.result)
-      reader.readAsDataURL(file)
+      const reader = new FileReader();
+      reader.onload = (e) => setAvatarPreview(e.target.result);
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validate required fields
     if (!username) {
-      setShowError(true)
-      setErrorMessage('Username is required')
-      return
+      setShowError(true);
+      setErrorMessage("Username is required");
+      return;
     }
     if (username.length < 3 || username.length > 50) {
-      setShowError(true)
-      setErrorMessage('Username must be between 3 and 50 characters')
-      return
+      setShowError(true);
+      setErrorMessage("Username must be between 3 and 50 characters");
+      return;
     }
     if (headline && headline.length > 100) {
-      setShowError(true)
-      setErrorMessage('Headline must be less than 100 characters')
-      return
+      setShowError(true);
+      setErrorMessage("Headline must be less than 100 characters");
+      return;
     }
     if (bio && bio.length > 200) {
-      setShowError(true)
-      setErrorMessage('Bio must be less than 200 characters')
-      return
+      setShowError(true);
+      setErrorMessage("Bio must be less than 200 characters");
+      return;
     }
 
-    setLoading(true)
-    const supabase = createClient()
+    setLoading(true);
+    const supabase = createClient();
 
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      setShowError(true)
-      setErrorMessage('You must be logged in to create a profile')
-      setLoading(false)
-      router.replace('/auth/login')
-      return
+      setShowError(true);
+      setErrorMessage("You must be logged in to create a profile");
+      setLoading(false);
+      router.replace("/auth/login");
+      return;
     }
 
-    let avatarUrl = null
+    let avatarUrl = null;
 
     if (avatarFile) {
       // Check if the file is an image and under 5MB
-      if (
-        !avatarFile.type.startsWith('image/') ||
-        avatarFile.size > 5 * 1024 * 1024
-      ) {
-        setShowError(true)
-        setErrorMessage('Please upload a valid image under 5MB')
-        setLoading(false)
-        return
+      if (!avatarFile.type.startsWith("image/") || avatarFile.size > 5 * 1024 * 1024) {
+        setShowError(true);
+        setErrorMessage("Please upload a valid image under 5MB");
+        setLoading(false);
+        return;
       }
       // Create a unique filename
-      const fileExt = avatarFile.name.split('.').pop()
-      const fileName = `${Date.now()}.${fileExt}`
-      const filePath = `${user.id}/${fileName}`
+      const fileExt = avatarFile.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, avatarFile)
+        .from("avatars")
+        .upload(filePath, avatarFile);
       if (uploadError) {
-        setShowError(true)
-        setErrorMessage('Failed to upload avatar image')
-        console.error('Avatar upload error:', uploadError)
-        setLoading(false)
-        return
+        setShowError(true);
+        setErrorMessage("Failed to upload avatar image");
+        console.error("Avatar upload error:", uploadError);
+        setLoading(false);
+        return;
       }
       // Get the public URL of the uploaded image
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(uploadData.path)
+      const { data } = supabase.storage.from("avatars").getPublicUrl(uploadData.path);
 
       if (!data.publicUrl) {
-        setShowError(true)
-        setErrorMessage('Failed to get avatar URL.')
-        setLoading(false)
-        return
+        setShowError(true);
+        setErrorMessage("Failed to get avatar URL.");
+        setLoading(false);
+        return;
       }
-      avatarUrl = data.publicUrl
+      avatarUrl = data.publicUrl;
     }
 
     // Send all data to the server
     try {
-      const response = await axios.post('/api/profile/create', {
+      const response = await axios.post("/api/profile/create", {
         id: user.id, // Ensure user ID is sent
         username,
         headline,
         bio,
         avatar: avatarUrl,
-      })
+      });
 
       if (response.status === 201) {
         // Redirect to the main app or profile page
-        router.replace('/feed')
+        router.replace("/feed");
       } else {
-        setShowError(true)
-        setErrorMessage('Failed to create profile')
+        setShowError(true);
+        setErrorMessage("Failed to create profile");
       }
     } catch (error) {
-      console.error('Error creating profile:', error)
-      setShowError(true)
-      setErrorMessage('An error occurred while creating your profile')
+      console.error("Error creating profile:", error);
+      setShowError(true);
+      setErrorMessage("An error occurred while creating your profile");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSkip = async () => {
     // Navigate to main app with default values
     // take default username and send request to create profile
-    setLoading(true)
-    setShowError(false)
-    setErrorMessage('')
-    const supabase = createClient()
+    setLoading(true);
+    setShowError(false);
+    setErrorMessage("");
+    const supabase = createClient();
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
     if (userError || !user) {
-      setShowError(true)
-      setErrorMessage('You must be logged in to create a profile')
-      setLoading(false)
-      router.replace('/auth/login')
-      return
+      setShowError(true);
+      setErrorMessage("You must be logged in to create a profile");
+      setLoading(false);
+      router.replace("/auth/login");
+      return;
     }
 
     try {
-      const response = await axios.post('/api/profile/create', {
+      const response = await axios.post("/api/profile/create", {
         id: user.id,
-        username: username
-          ? username
-          : `User${Math.floor(Math.random() * 1000)}`,
-        headline: '',
-        bio: '',
+        username: username ? username : `User${Math.floor(Math.random() * 1000)}`,
+        headline: "",
+        bio: "",
         avatar: null, // No avatar for skipped setup
-      })
+      });
       if (response.status === 201) {
-        router.replace('/feed') // Assuming this is the main app route
+        router.replace("/feed"); // Assuming this is the main app route
       } else {
-        setShowError(true)
-        setErrorMessage('Failed to create profile with default values')
+        setShowError(true);
+        setErrorMessage("Failed to create profile with default values");
       }
     } catch (error) {
-      console.error('Error creating default profile:', error)
-      setShowError(true)
-      setErrorMessage('An error occurred while creating your default profile')
+      console.error("Error creating default profile:", error);
+      setShowError(true);
+      setErrorMessage("An error occurred while creating your default profile");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen p-4 bg-dark">
@@ -243,8 +233,7 @@ export default function Page() {
             kedIn!
           </h1>
           <p className="text-lg text-light-secondary">
-            Let's get your professional disaster profile etched into the
-            Sinkedin hall of shame.
+            Let's get your professional disaster profile etched into the Sinkedin hall of shame.
           </p>
         </div>
 
@@ -255,11 +244,7 @@ export default function Page() {
             <div className="relative inline-block">
               <div className="w-24 h-24 rounded-full border-2 flex items-center justify-center mb-4 overflow-hidden border-dark-border">
                 {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <Image
                     src="/default_avatar.jpg" // Assuming the default image is stored in the public folder
@@ -282,8 +267,7 @@ export default function Page() {
               </label>
             </div>
             <p className="text-sm text-light-secondary mt-2">
-              Got a pic that screams 'I've made poor life choices'? Share it
-              (optional).
+              Got a pic that screams 'I've made poor life choices'? Share it (optional).
             </p>
           </div>
 
@@ -297,8 +281,7 @@ export default function Page() {
           {/* Username Section */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2 text-light">
-              Username{' '}
-              <span className="text-xs text-light-secondary">(required)</span>
+              Username <span className="text-xs text-light-secondary">(required)</span>
             </label>
             <div className="flex gap-2">
               <input
@@ -306,12 +289,8 @@ export default function Page() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="flex-1 px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light"
-                onFocus={(e) =>
-                  (e.target.style.borderColor = 'var(--color-accent)')
-                }
-                onBlur={(e) =>
-                  (e.target.style.borderColor = 'var(--color-dark-border)')
-                }
+                onFocus={(e) => (e.target.style.borderColor = "var(--color-accent)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--color-dark-border)")}
               />
               <button
                 onClick={generateRandomUsername}
@@ -327,20 +306,14 @@ export default function Page() {
           </div>
           {/* Headline Section Just like linkedin */}
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2 text-light">
-              Headline
-            </label>
+            <label className="block text-sm font-medium mb-2 text-light">Headline</label>
             <input
               type="text"
-              value={headline ? headline : ''}
+              value={headline ? headline : ""}
               onChange={(e) => setHeadline(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border outline-none transition-colors bg-dark border-dark-border text-light"
-              onFocus={(e) =>
-                (e.target.style.borderColor = 'var(--color-accent)')
-              }
-              onBlur={(e) =>
-                (e.target.style.borderColor = 'var(--color-dark-border)')
-              }
+              onFocus={(e) => (e.target.style.borderColor = "var(--color-accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--color-dark-border)")}
               placeholder="The TL;DR of Your Downfall"
               maxLength={100}
             />
@@ -354,16 +327,12 @@ export default function Page() {
               Flaunt Your Failures (Bio)
             </label>
             <textarea
-              value={bio ? bio : ''}
+              value={bio ? bio : ""}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
               className="w-full px-4 py-3 rounded-lg border outline-none transition-colors resize-none bg-dark border-dark-border text-light"
-              onFocus={(e) =>
-                (e.target.style.borderColor = 'var(--color-accent)')
-              }
-              onBlur={(e) =>
-                (e.target.style.borderColor = 'var(--color-dark-border)')
-              }
+              onFocus={(e) => (e.target.style.borderColor = "var(--color-accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--color-dark-border)")}
               placeholder="Detail your descent into career chaos. Give us the gory details. What went spectacularly wrong? e.g., 'That time I accidentally set off the fire alarm during a board meeting..."
               maxLength={200}
             />
@@ -382,7 +351,7 @@ export default function Page() {
                   <span className="loader"></span> Creating Profile...
                 </span>
               ) : (
-                'Create Profile'
+                "Create Profile"
               )}
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -396,7 +365,7 @@ export default function Page() {
                   <span className="loader"></span> Skipping...
                 </span>
               ) : (
-                'Skip for Now'
+                "Skip for Now"
               )}
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -406,13 +375,12 @@ export default function Page() {
         {/* Footer Note */}
         <div className="text-center">
           <p className="text-sm text-light-secondary">
-            Don't worry, you can change all of this later in your profile
-            settings.
+            Don't worry, you can change all of this later in your profile settings.
             <br />
             Or not. We're not your boss (yet).
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

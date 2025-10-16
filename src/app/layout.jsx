@@ -1,13 +1,13 @@
-import './globals.css'
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
-import { UserProvider } from '@/contexts/UserContext'
-import Header from '@/components/Header'
-import { cookies } from 'next/headers'
+import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { UserProvider } from "@/contexts/UserContext";
+import Header from "@/components/Header";
+import { cookies } from "next/headers";
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 export const metadata = {
-  title: 'Sinkedin: Professional Fails & Career Despair',
+  title: "Sinkedin: Professional Fails & Career Despair",
   description:
     "The brutally honest, hilariously real anti-professional network. Share job rejection stories, epic interview fails, and career disasters. It's schadenfreude, but for work.",
   // Uncomment when pushin to production
@@ -55,20 +55,20 @@ export const metadata = {
   //   locale: "en_US",
   //   type: "website",
   // },
-}
+};
 
 export default async function RootLayout({ children }) {
   // Read server cookie to avoid hydration mismatch: if user previously chose dark,
   // render server HTML with the same class so client/hydration match.
-  const cookieStore = await cookies()
-  const themeCookie = cookieStore.get('theme')
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("theme");
   // Default to dark on the server to match client preference and avoid
   // hydration mismatches when no cookie is set.
-  const serverTheme = themeCookie?.value || 'dark'
+  const serverTheme = themeCookie?.value || "dark";
 
   return (
     // Render either 'dark' or 'light' so the HTML class is deterministic
-    <html lang="en" className={serverTheme === 'dark' ? 'dark' : 'light'}>
+    <html lang="en" className={serverTheme === "dark" ? "dark" : "light"}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         {/* Inline script to set initial theme class before React hydrates (site defaults to dark)
@@ -84,7 +84,7 @@ export default async function RootLayout({ children }) {
           <Header />
           {children}
         </UserProvider>
-        {process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true' && (
+        {process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true" && (
           <>
             <Analytics />
             <SpeedInsights />
@@ -92,5 +92,5 @@ export default async function RootLayout({ children }) {
         )}
       </body>
     </html>
-  )
+  );
 }

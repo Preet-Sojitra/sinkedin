@@ -1,12 +1,9 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export async function createClient() {
   // If env vars are missing, return a safe stub so server components don't crash.
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return {
       auth: {
         // minimal stubs used by the app
@@ -18,22 +15,22 @@ export async function createClient() {
       from: () => {
         const builder = {
           select() {
-            return builder
+            return builder;
           },
           order() {
-            return builder
+            return builder;
           },
           limit() {
-            return builder
+            return builder;
           },
           range: async () => ({ data: [], error: null }),
-        }
-        return builder
+        };
+        return builder;
       },
-    }
+    };
   }
 
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -41,13 +38,13 @@ export async function createClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            )
+              cookieStore.set(name, value, options)
+            );
           } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
@@ -55,6 +52,6 @@ export async function createClient() {
           }
         },
       },
-    },
-  )
+    }
+  );
 }

@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    remotePatterns: [new URL(process.env.SUPABASE_AVATARS_URL)],
-  },
+  remotePatterns: [], // empty array for local testing
+},
+
 }
 
 export default nextConfig

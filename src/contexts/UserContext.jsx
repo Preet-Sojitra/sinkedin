@@ -10,83 +10,95 @@ export function UserProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const supabase = createClient()
+
+  // Fetch user + profile
   const fetchUserProfile = async () => {
-    const supabase = createClient()
+    setIsLoading(true)
+    try {
+      // Get current user session
+      const {
+        data: { user: authUser },
+        error: userError,
+      } = await supabase.auth.getUser()
+      if (userError) console.error('Error fetching auth user:', userError)
 
-    // Get the current user session
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser()
+      setUser(authUser)
 
-    setUser(authUser)
+      if (authUser) {
+        // Fetch profile safely
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('id, avatar_url, username, headline, bio, created_at')
+          .eq('id', authUser.id)
+          .maybeSingle() // <-- safe if no row exists
 
-    if (authUser) {
-      // Fetch their profile from the 'profiles' table
-      const { data: profileData, error } = await supabase
+        if (error) console.error('Error fetching profile:', error)
+        setProfile(profileData || null)
+      } else {
+        setProfile(null)
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching profile:', err)
+      setUser(null)
+      setProfile(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Update profile in DB + local state
+  const updateProfile = async (updatedData) => {
+    if (!user) return false
+
+    try {
+      const { data, error } = await supabase
         .from('profiles')
-        .select('avatar_url, username, headline, bio, created_at, id')
-        .eq('id', authUser.id)
-        .single()
+        .update(updatedData)
+        .eq('id', user.id)
+        .select()
+        .maybeSingle()
 
       if (error) {
-        console.error('Error fetching profile:', error)
-        setProfile(null)
-      } else {
-        setProfile(profileData)
+        console.error('Error updating profile:', error)
+        return false
       }
-    } else {
-      setProfile(null)
-    }
 
-    setIsLoading(false)
-  }
-
-  const updateProfile = async (updatedData) => {
-    if (!user) return
-
-    const supabase = createClient()
-    
-    // Update the profile in the database
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updatedData)
-      .eq('id', user.id)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error updating profile:', error)
+      setProfile((prev) => ({ ...prev, ...data }))
+      return true
+    } catch (err) {
+      console.error('Unexpected error updating profile:', err)
       return false
     }
-
-    // Update the local state with the new data
-    setProfile(prev => ({ ...prev, ...data }))
-    return true
   }
 
-  const refreshProfile = () => {
-    fetchUserProfile()
-  }
+  const refreshProfile = () => fetchUserProfile()
 
   useEffect(() => {
     fetchUserProfile()
+
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          setUser(null)
+          setProfile(null)
+        } else {
+          fetchUserProfile()
+        }
+      },
+    )
+
+    return () => listener?.subscription?.unsubscribe()
   }, [])
 
-  const value = {
-    user,
-    profile,
-    isLoading,
-    updateProfile,
-    refreshProfile,
-  }
+  const value = { user, profile, isLoading, updateProfile, refreshProfile }
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 }
 
-export function useUser() {
+export const useUser = () => {
   const context = useContext(UserContext)
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider')
-  }
+  if (!context) throw new Error('useUser must be used within a UserProvider')
   return context
 }

@@ -11,4 +11,4 @@ create table if not exists public.chats (
   constraint username_length check (char_length(username) >= 3 AND char_length(username) <= 50)
 );
 
-comment on column public.chat.user_id is 'References the profiles table id';
+comment on column public.chats.user_id is 'References the profiles table id';

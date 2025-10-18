@@ -2,45 +2,11 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState } from 'react'
 import NotificationBell from './notifications/NotificationBell'
+import { useUser } from '@/contexts/UserContext'
 
 export default function Header() {
-  // We'll store the full profile info here, including the avatar
-  const [profile, setProfile] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      const supabase = createClient()
-
-      // 1. Get the current user session
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (user) {
-        // 2. If user exists, fetch their profile from the 'profiles' table
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('avatar_url, username')
-          .eq('id', user.id)
-          .single() // We expect only one profile per user
-
-        if (error) {
-          console.error('Error fetching profile:', error)
-          setProfile(null) // Fallback if profile is missing
-        } else {
-          setProfile(profileData)
-        }
-      }
-
-      setIsLoading(false)
-    }
-
-    fetchUserProfile()
-  }, [])
+  const { profile, isLoading } = useUser()
 
   return (
     <header className="bg-dark-secondary border-b border-dark-border px-0 py-3 sticky top-0 z-50">

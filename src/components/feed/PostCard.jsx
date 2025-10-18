@@ -1,14 +1,19 @@
 'use client'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Share2 } from 'lucide-react'
+import { Share2, Trash2 } from 'lucide-react'
 
 // --- Main PostCard Component ---
-export default function PostCard({ post, currentUserId, currentUserAvatar }) {
+export default function PostCard({
+  post,
+  currentUserId,
+  currentUserAvatar,
+  setPosts,
+}) {
   const {
     id,
     author,
@@ -20,6 +25,7 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
     comments: initialComments,
   } = post
 
+  const FEED_CACHE_KEY = 'sinkedin_feed_cache'
   const supabase = createClient()
 
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false)
@@ -40,6 +46,7 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
 
   const [reactedEmoji, setReactedEmoji] = useState(null)
   const [counts, setCounts] = useState(reaction_counts)
+  const [isPostDeleting, setIsPostDeleting] = useState(false)
 
   const [copyStatus, setCopyStatus] = useState('Copy link')
 
@@ -126,44 +133,185 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
       })
   }
 
+  const handlePostDelete = async () => {
+    setIsPostDeleting(true)
+    try {
+      if (author?.id !== currentUserId) return
+      const deleteResponse = await axios.delete('/api/post/delete', {
+        data: {
+          postId: id,
+        },
+      })
+      if (deleteResponse.status === 200) {
+        try {
+          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
+          if (cachedData) {
+            const parsedCacheData = JSON.parse(cachedData)
+            const filteredPosts = parsedCacheData.posts.filter(
+              (eachPost) => eachPost.id !== id,
+            )
+            const updateCacheData = {
+              ...parsedCacheData,
+              posts: filteredPosts,
+            }
+            sessionStorage.setItem(
+              FEED_CACHE_KEY,
+              JSON.stringify(updateCacheData),
+            )
+            setPosts(filteredPosts)
+          }
+        } catch (error) {
+          console.error(
+            'Error occured while clearing deleted posts from session storage: ',
+            error,
+          )
+        }
+      }
+    } catch (error) {
+      console.error('Error while deleting the post: ', error)
+    } finally {
+      setIsPostDeleting(false)
+    }
+  }
+
   const username = author?.username || 'AnonymousPanda'
   const avatar_url = author?.avatar_url || '/default_avatar.jpg'
 
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
 
+  const reactionToGifMap = {
+    Laugh: '/laugh.gif',
+    Clown: '/clown.gif',
+    Skull: '/skull.gif',
+    Relatable: '/relatable.gif',
+  }
+
+  // ReactionEmojiButton: shows emoji normally, GIF on hover or on click (for touch)
+  function ReactionEmojiButton({
+    emojiName,
+    emojiChar,
+    gifUrl,
+    count,
+    selected,
+    onClick,
+  }) {
+    const [hovered, setHovered] = useState(false)
+    const [clicked, setClicked] = useState(false)
+    const clickTimerRef = useRef(null)
+
+    useEffect(() => {
+      return () => {
+        if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+      }
+    }, [])
+
+    const handleMouseEnter = () => setHovered(true)
+    const handleMouseLeave = () => setHovered(false)
+
+    const handlePress = (e) => {
+      // keep original onClick behavior (which will call your API)
+      onClick && onClick(e)
+
+      // show animation briefly after click — good for mobile
+      setClicked(true)
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = setTimeout(() => {
+        setClicked(false)
+      }, 1500) // show gif for 1.5s after click
+    }
+
+    const showGif = hovered || clicked
+
+    return (
+      <button
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handlePress}
+        aria-pressed={selected}
+        title={emojiName}
+        className={`flex items-center gap-2 text-light-secondary text-sm duration-200 ${
+          selected ? 'bg-white/10 text-light p-1 rounded-md' : ''
+        }`}
+        // keep appearance identical to previous buttons
+      >
+        <span className="flex items-center justify-center w-[1.375rem] h-[1.375rem]">
+          {showGif && gifUrl ? (
+            // plain <img> — avoid next/image for external GIFs
+            <img
+              src={gifUrl}
+              alt={`${emojiName} animation`}
+              className="w-[1.5rem] h-[1.5rem] object-contain pointer-events-none"
+              draggable={false}
+            />
+          ) : (
+            <span className="text-xl select-none">{emojiChar}</span>
+          )}
+        </span>
+        <span className="font-medium">{count}</span>
+      </button>
+    )
+  }
+
   return (
     <article className="bg-dark-secondary border border-dark-border rounded-lg px-5 py-6 md:p-6">
       {/* Post Header: Avatar and Author Info */}
-      <div className="flex items-start gap-4">
-        <Link
-          href={is_anonymous ? '#' : `/profile/${author.id}`}
-          className="flex-shrink-0"
-        >
-          <div className="w-10 h-10 bg-dark-border rounded-full overflow-hidden">
-            <Image
-              src={is_anonymous ? '/anon_panda.jpg' : avatar_url}
-              alt="User Avatar"
-              width={40}
-              height={40}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </Link>
-        <div className="">
-          <div className="flex-1">
-            <Link
-              href={is_anonymous ? '#' : `/profile/${author?.id}`}
-              className="font-semibold text-light hover:underline"
-            >
-              {is_anonymous ? 'Anonymous Panda' : username}
-            </Link>
-            <div className="text-light-secondary text-xs">{timeAgo}</div>
-          </div>
+      <div className="flex items-start justify-between">
+        <div className="flex flex-row gap-4">
+          <Link
+            href={is_anonymous ? '#' : `/profile/${author.id}`}
+            className="flex-shrink-0"
+          >
+            <div className="w-10 h-10 bg-dark-border rounded-full overflow-hidden">
+              <Image
+                src={is_anonymous ? '/anon_panda.jpg' : avatar_url}
+                alt="User Avatar"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </Link>
+          <div className="">
+            <div className="flex-1">
+              <Link
+                href={is_anonymous ? '#' : `/profile/${author?.id}`}
+                className="font-semibold text-light hover:underline"
+              >
+                {is_anonymous ? 'Anonymous Panda' : username}
+              </Link>
+              <div className="text-light-secondary text-xs">{timeAgo}</div>
+            </div>
 
-          {/* Post Body: Content */}
-          <div className="hidden md:block mt-4 text-base text-light whitespace-pre-wrap">
-            {body}
+            {/* Post Body: Content */}
+            <div className="hidden md:block mt-4 text-base text-light whitespace-pre-wrap">
+              {body}
+            </div>
           </div>
+        </div>
+        <div>
+          {author?.id === currentUserId ? (
+            !isPostDeleting ? (
+              <Trash2
+                className="size-5 text-accent cursor-pointer"
+                onClick={handlePostDelete}
+              />
+            ) : (
+              <svg
+                className="size-5 animate-spin text-accent"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M2 12a10 10 0 0110-10v5a5 5 0 00-5 5H2z"
+                ></path>
+              </svg>
+            )
+          ) : (
+            ''
+          )}
         </div>
       </div>
 
@@ -176,18 +324,18 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
         <div className="flex gap-4 pt-5 pl-3 flex-wrap">
           {Object.entries(counts).map(([emojiName, count]) => {
             const emoji = reactionToEmojiMap[emojiName] || emojiName
+            const gif = reactionToGifMap[emojiName]
             const hasReacted = reactedEmoji === emojiName
             return (
-              <button
+              <ReactionEmojiButton
                 key={emojiName}
-                className={`flex items-center gap-2 text-light-secondary text-sm duration-200 ${
-                  hasReacted ? 'bg-white/10 text-light p-1 rounded-md' : ''
-                }`}
+                emojiName={emojiName}
+                emojiChar={emoji}
+                gifUrl={gif}
+                count={count}
+                selected={hasReacted}
                 onClick={() => handleReactionClick(emojiName)}
-              >
-                <span className="text-xl">{emoji}</span>
-                <span className="font-medium">{count}</span>
-              </button>
+              />
             )
           })}
 
@@ -210,8 +358,8 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
           postId={id}
           initialComments={comments}
           currentUserAvatar={currentUserAvatar}
-          onCommentPosted={handleCommentPosted}
           isUserAuthenticated={isUserAuthenticated}
+          currentUserId={currentUserId}
         />
       </div>
     </article>
@@ -223,12 +371,13 @@ function CommentSection({
   postId,
   initialComments,
   currentUserAvatar,
-  onCommentPosted,
   isUserAuthenticated = false, // Default to false if not provided
+  currentUserId,
 }) {
   const [comments, setComments] = useState(initialComments)
   const [isLoading, setIsLoading] = useState(false)
   const [moreCommentsAvailable, setMoreCommentsAvailable] = useState(true)
+  const FEED_CACHE_KEY = 'sinkedin_feed_cache'
 
   // Update local state if the initial comments from props change
   useEffect(() => {
@@ -256,11 +405,45 @@ function CommentSection({
         return
       }
 
-      // Append new comments to the existing list
-      setComments((prevComments) => [
-        ...prevComments,
-        ...response.data.comments,
-      ])
+      if (response.status === 200) {
+        try {
+          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
+          if (cachedData) {
+            let updatedComments
+            const parsedCacheData = JSON.parse(cachedData)
+            const updatedPosts = parsedCacheData.posts.map((post) => {
+              if (post.id === postId) {
+                const existingComments = Array.isArray(post.comments)
+                  ? post.comments
+                  : []
+                updatedComments = [
+                  ...existingComments,
+                  ...response.data.comments,
+                ]
+                return {
+                  ...post,
+                  comments: updatedComments,
+                }
+              }
+              return post
+            })
+            const updateCacheData = {
+              ...parsedCacheData,
+              posts: updatedPosts,
+            }
+            sessionStorage.setItem(
+              FEED_CACHE_KEY,
+              JSON.stringify(updateCacheData),
+            )
+            setComments(updatedComments ? updatedComments : [])
+          }
+        } catch (error) {
+          console.error(
+            'Error occured while clearing adding comments to session storage: ',
+            error,
+          )
+        }
+      }
     } catch (error) {
       console.error('Failed to load more comments:', error)
     } finally {
@@ -274,8 +457,8 @@ function CommentSection({
         <AddComment
           currentUserAvatar={currentUserAvatar}
           postId={postId}
-          onCommentPosted={onCommentPosted} // Pass handler to AddComment
           isUserAuthenticated={isUserAuthenticated} // Pass authentication status
+          setComments={setComments}
         />
       </div>
     )
@@ -286,8 +469,8 @@ function CommentSection({
       <AddComment
         currentUserAvatar={currentUserAvatar}
         postId={postId}
-        onCommentPosted={onCommentPosted} // Pass handler to AddComment
         isUserAuthenticated={isUserAuthenticated} // Pass authentication status
+        setComments={setComments}
       />
 
       {/* Reverse the comments array for display to show newest first */}
@@ -295,7 +478,13 @@ function CommentSection({
         .slice()
         .reverse()
         .map((comment) => (
-          <Comment key={comment.id} comment={comment} />
+          <Comment
+            key={comment.id}
+            comment={comment}
+            currentUserId={currentUserId}
+            postId={postId}
+            setComments={setComments}
+          />
         ))}
 
       {/* Logic for showing "Load More" button */}
@@ -315,10 +504,66 @@ function CommentSection({
 }
 
 // --- Helper Component: A single comment ---
-function Comment({ comment }) {
-  const { author, avatar_url, body, created_at } = comment
-  const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
+function Comment({ comment, currentUserId, postId, setComments }) {
+  const FEED_CACHE_KEY = 'sinkedin_feed_cache'
 
+  const { author, avatar_url, body, created_at, id: commentId } = comment
+  const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
+  const [isCommentDeleting, setIsCommentDeleting] = useState(false)
+
+  const handleCommentDelete = async () => {
+    setIsCommentDeleting(true)
+    try {
+      if (author?.id !== currentUserId) return
+      const deleteCommentResponse = await axios.delete(
+        '/api/post/comment/delete',
+        {
+          data: {
+            commentId: commentId,
+          },
+        },
+      )
+      if (deleteCommentResponse.status === 200) {
+        try {
+          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
+          if (cachedData) {
+            let updatedComments
+            const parsedCacheData = JSON.parse(cachedData)
+            const updatedPosts = parsedCacheData.posts.map((post) => {
+              if (post.id === postId) {
+                updatedComments = post.comments.filter(
+                  (comment) => comment.id !== commentId,
+                )
+                return {
+                  ...post,
+                  comments: updatedComments,
+                }
+              }
+              return post
+            })
+            const updateCacheData = {
+              ...parsedCacheData,
+              posts: updatedPosts,
+            }
+            sessionStorage.setItem(
+              FEED_CACHE_KEY,
+              JSON.stringify(updateCacheData),
+            )
+            setComments(updatedComments ? updatedComments : [])
+          }
+        } catch (error) {
+          console.error(
+            'Error occured while clearing deleted comments from session storage: ',
+            error,
+          )
+        }
+      }
+    } catch (error) {
+      console.error('Error occured while deleting a comment: ', error)
+    } finally {
+      setIsCommentDeleting(false)
+    }
+  }
   return (
     <div className="flex items-start gap-3">
       <Link href={`/profile/${author.id}`} className="flex-shrink-0 mt-1">
@@ -331,14 +576,41 @@ function Comment({ comment }) {
         />
       </Link>
       <div className="flex-1 bg-dark px-3 py-2 rounded-lg">
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-          <Link
-            href={`/profile/${author.id}`}
-            className="font-semibold text-light text-sm hover:underline"
-          >
-            {author.username}
-          </Link>
-          <span className="text-light-secondary text-xs">{timeAgo}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+            <Link
+              href={`/profile/${author.id}`}
+              className="font-semibold text-light text-sm hover:underline"
+            >
+              {author.username}
+            </Link>
+            <span className="text-light-secondary text-xs">{timeAgo}</span>
+          </div>
+          <div>
+            {author?.id === currentUserId ? (
+              !isCommentDeleting ? (
+                <Trash2
+                  className="size-4 text-accent cursor-pointer"
+                  onClick={handleCommentDelete}
+                />
+              ) : (
+                <svg
+                  className="size-4 animate-spin text-accent"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M2 12a10 10 0 0110-10v5a5 5 0 00-5 5H2z"
+                  ></path>
+                </svg>
+              )
+            ) : (
+              ''
+            )}
+          </div>
         </div>
         <p className="text-light whitespace-pre-wrap mt-2 sm:mt-1 text-sm">
           {body}
@@ -352,9 +624,10 @@ function Comment({ comment }) {
 function AddComment({
   currentUserAvatar,
   postId,
-  onCommentPosted,
   isUserAuthenticated,
+  setComments,
 }) {
+  const FEED_CACHE_KEY = 'sinkedin_feed_cache'
   const [isEditing, setIsEditing] = useState(false)
   const [commentText, setCommentText] = useState('')
   const [isCommentPosting, setIsCommentPosting] = useState(false)
@@ -370,11 +643,44 @@ function AddComment({
       })
       console.log(response.data)
       if (response.status === 201) {
-        // Reset the form after posting
-        onCommentPosted(response.data)
-        setCommentText('')
-        setIsEditing(false)
+        try {
+          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
+          if (cachedData) {
+            let updatedComments
+            const parsedCacheData = JSON.parse(cachedData)
+            const updatedPosts = parsedCacheData.posts.map((post) => {
+              if (post.id === postId) {
+                const existingComments = Array.isArray(post.comments)
+                  ? post.comments
+                  : []
+                updatedComments = [...existingComments, response.data]
+                return {
+                  ...post,
+                  comments: updatedComments,
+                }
+              }
+              return post
+            })
+            const updateCacheData = {
+              ...parsedCacheData,
+              posts: updatedPosts,
+            }
+            sessionStorage.setItem(
+              FEED_CACHE_KEY,
+              JSON.stringify(updateCacheData),
+            )
+            setComments(updatedComments ? updatedComments : [])
+          }
+        } catch (error) {
+          console.error(
+            'Error occured while clearing adding comments to session storage: ',
+            error,
+          )
+        }
       }
+      // Reset the form after posting
+      setCommentText('')
+      setIsEditing(false)
     } catch (error) {
       console.error('Error posting comment:', error)
     } finally {

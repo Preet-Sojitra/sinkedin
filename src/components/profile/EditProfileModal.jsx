@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Camera, X } from "lucide-react"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
+import { useUser } from "@/contexts/UserContext"
 import axios from "axios"
 
 export default function EditProfileModal({
@@ -11,6 +12,7 @@ export default function EditProfileModal({
   onClose,
   onProfileUpdate,
 }) {
+  const { refreshProfile } = useUser()
   const [username, setUsername] = useState(initialProfile.username)
   const [headline, setHeadline] = useState(initialProfile.headline || "")
   const [bio, setBio] = useState(initialProfile.bio || "")
@@ -81,6 +83,7 @@ export default function EditProfileModal({
       })
 
       if (response.status === 200) {
+        refreshProfile() // Update the global user context
         onProfileUpdate() // This will trigger a refresh on the parent page
         onClose() // Close the modal
       }

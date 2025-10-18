@@ -4,11 +4,56 @@ import { Filter } from 'bad-words'
 import { initQueue } from '@/lib/content-moderation/queuing'
 import TokenizePosts from '@/lib/content-moderation/tokenize'
 
+
 // Initialize the bad words filter
 const filter = new Filter()
 
+
 // initialize the queue for the post content check
 const { addToQueue } = initQueue()
+
+const positiveWords = [
+  'great',
+  'awesome',
+  'amazing',
+  'love',
+  'happy',
+  'wonderful',
+  'fantastic',
+  'excellent',
+  'perfect',
+  'best',
+  'good',
+  'nice',
+  'superb',
+  'brilliant',
+  'delightful',
+  'joyful',
+  'cheerful',
+  'optimistic',
+  'positive',
+  'success',
+  'win',
+  'victory',
+  'achieve',
+  'proud',
+]
+
+// Function to count positive words in content
+const countPositiveWords = (content) => {
+  const lowerContent = content.toLowerCase()
+  let count = 0
+  positiveWords.forEach((word) => {
+    // Use regex to match whole words (case-insensitive)
+    const regex = new RegExp(`\\b${word}\\b`, 'gi')
+    const matches = lowerContent.match(regex)
+    if (matches) {
+      count += matches.length
+    }
+  })
+  return count
+}
+
 
 const censorWord = (word) => {
   // Replace the word with asterisks, maintaining the original length
@@ -26,6 +71,19 @@ export async function POST(request) {
     if (!content || content.trim() === '') {
       return NextResponse.json(
         { error: 'Content cannot be empty.' },
+        { status: 400 },
+      )
+    }
+
+    // Check for overly positive content
+    const positiveCount = countPositiveWords(content)
+    if (positiveCount >= 3) {
+      return NextResponse.json(
+        {
+          error:
+            'Whoa, too much sunshine here! Even unicorns are jealous. Share a flop instead!',
+        },
+
         { status: 400 },
       )
     }
@@ -140,7 +198,7 @@ export async function POST(request) {
             avatar_url: fullPost.profiles?.avatar_url,
           },
       // A new post will have no reactions
-      reaction_counts: { F: 0, Clown: 0, Skull: 0, Relatable: 0 },
+      reaction_counts: { Laugh: 0, Clown: 0, Skull: 0, Relatable: 0 },
       reaction: [], // An empty array for reactions
     }
 

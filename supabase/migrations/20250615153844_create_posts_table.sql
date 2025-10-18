@@ -9,3 +9,7 @@ CREATE TABLE public.posts (
 
 -- Comments for clarity
 COMMENT ON TABLE public.posts IS 'Stores the user-submitted failure posts.';
+
+-- Adding table under supabase_realtime
+alter publication supabase_realtime
+add table public.posts;

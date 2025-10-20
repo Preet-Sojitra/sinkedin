@@ -11,6 +11,7 @@ export async function createClient() {
         getSession: async () => ({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscriber: { unsubscribe: () => {} } } }),
         signOut: async () => ({ error: null }),
+        exchangeCodeForSession: async () => ({ data: { user: null, session: null }, error: null }),
       },
       // Provide a chainable query builder that resolves to an empty result set.
       from: () => {

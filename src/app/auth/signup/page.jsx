@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -86,15 +86,41 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        // This is where Supabase will redirect the user back to your app
-        // after they have signed in with Google.
-        // It MUST be in your Supabase project's list of allowed Redirect URLs.
-        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
-      },
-    });
+    setIsLoading(true);
+    setShowError(false);
+    setErrorMessage("");
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          // This is where Supabase will redirect the user back to your app
+          // after they have signed in with Google.
+          // It MUST be in your Supabase project's list of allowed Redirect URLs.
+          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
+        },
+      });
+
+      if (error) {
+        console.error("Google signup error:", error);
+        setShowError(true);
+        setErrorMessage(
+          error?.message ||
+            "Google sign-up is currently unavailable. Please use email/password signup or check your Supabase configuration."
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // OAuth redirects automatically, so if we get here without error,
+      // we're waiting for the redirect
+      // Note: setIsLoading stays true as user is being redirected
+    } catch (error) {
+      console.error("Google signup error:", error);
+      setShowError(true);
+      setErrorMessage("Google sign-up is currently unavailable. Please use email/password signup.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -166,6 +192,27 @@ export default function SignupPage() {
 
           <div className="bg-dark-secondary border border-[color:var(--accent)]/30 rounded-lg p-8">
             <h2 className="text-2xl font-bold text-light mb-6 text-center">Join the Chaos</h2>
+
+            {/* Supabase Setup Notice */}
+            {(!process.env.NEXT_PUBLIC_SUPABASE_URL ||
+              !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) && (
+              <div className="mb-6 p-4 bg-[rgba(224,49,49,0.1)] border border-[color:var(--accent)]/30 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-light text-sm mb-1">
+                      Supabase Not Configured
+                    </h3>
+                    <p className="text-xs text-light-secondary mb-2">
+                      You need to set up Supabase to create an account.
+                    </p>
+                    <Link href="/setup" className="text-xs text-accent hover:underline font-medium">
+                      → View Setup Guide
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Social Login Buttons */}
             <div className="space-y-3 mb-6">

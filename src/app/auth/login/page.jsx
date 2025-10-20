@@ -59,25 +59,39 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
-      },
-    });
+    setIsLoading(true);
+    setShowError(false);
+    setErrorMessage("");
 
-    if (error) {
+    const supabase = createClient();
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
+        },
+      });
+
+      if (error) {
+        console.error("Google login error:", error);
+        setShowError(true);
+        setErrorMessage(
+          error?.message ||
+            "Google sign-in is currently unavailable. Please use email/password login or check your Supabase configuration."
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // OAuth redirects automatically, so if we get here without error,
+      // we're waiting for the redirect
+      // Note: setIsLoading stays true as user is being redirected
+    } catch (error) {
       console.error("Google login error:", error);
       setShowError(true);
-      setErrorMessage(error?.message || "An unexpected error occurred.");
-      return;
-    }
-
-    // Handle successful Google login if needed
-    if (data.user) {
-      router.push("/feed");
-      router.refresh(); // Ensures layout re-renders with new auth state
+      setErrorMessage("Google sign-in is currently unavailable. Please use email/password login.");
+      setIsLoading(false);
     }
   };
 
@@ -156,6 +170,26 @@ export default function LoginPage() {
 
           <div className="rounded-lg border p-8 bg-dark-secondary border-[color:var(--accent)]/30">
             <h2 className="text-2xl font-bold mb-6 text-center text-light">Welcome Back, Loser</h2>
+            {/* Supabase Setup Notice */}
+            {(!process.env.NEXT_PUBLIC_SUPABASE_URL ||
+              !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) && (
+              <div className="mb-6 p-4 bg-[rgba(224,49,49,0.1)] border border-[color:var(--accent)]/30 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-light text-sm mb-1">
+                      Supabase Not Configured
+                    </h3>
+                    <p className="text-xs text-light-secondary mb-2">
+                      You need to set up Supabase to use authentication.
+                    </p>
+                    <Link href="/setup" className="text-xs text-accent hover:underline font-medium">
+                      → View Setup Guide
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Social Login Buttons */}
             <div className="mb-6">
               <button

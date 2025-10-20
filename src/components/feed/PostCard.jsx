@@ -8,12 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Share2 } from "lucide-react";
 
 // --- Main PostCard Component ---
-export default function PostCard({
-  post,
-  currentUserId,
-  currentUserAvatar,
-  setPosts,
-}) {
+export default function PostCard({ post, currentUserId, currentUserAvatar, setPosts }) {
   const {
     id,
     author,
@@ -136,47 +131,40 @@ export default function PostCard({
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true });
 
   const reactionToGifMap = {
-    Laugh: '/laugh.gif',
-    Clown: '/clown.gif',
-    Skull: '/skull.gif',
-    Relatable: '/relatable.gif',
-  }
+    Laugh: "/laugh.gif",
+    Clown: "/clown.gif",
+    Skull: "/skull.gif",
+    Relatable: "/relatable.gif",
+  };
 
   // ReactionEmojiButton: shows emoji normally, GIF on hover or on click (for touch)
-  function ReactionEmojiButton({
-    emojiName,
-    emojiChar,
-    gifUrl,
-    count,
-    selected,
-    onClick,
-  }) {
-    const [hovered, setHovered] = useState(false)
-    const [clicked, setClicked] = useState(false)
-    const clickTimerRef = useRef(null)
+  function ReactionEmojiButton({ emojiName, emojiChar, gifUrl, count, selected, onClick }) {
+    const [hovered, setHovered] = useState(false);
+    const [clicked, setClicked] = useState(false);
+    const clickTimerRef = useRef(null);
 
     useEffect(() => {
       return () => {
-        if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
-      }
-    }, [])
+        if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+      };
+    }, []);
 
-    const handleMouseEnter = () => setHovered(true)
-    const handleMouseLeave = () => setHovered(false)
+    const handleMouseEnter = () => setHovered(true);
+    const handleMouseLeave = () => setHovered(false);
 
     const handlePress = (e) => {
       // keep original onClick behavior (which will call your API)
-      onClick && onClick(e)
+      onClick && onClick(e);
 
       // show animation briefly after click — good for mobile
-      setClicked(true)
-      if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+      setClicked(true);
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
       clickTimerRef.current = setTimeout(() => {
-        setClicked(false)
-      }, 1500) // show gif for 1.5s after click
-    }
+        setClicked(false);
+      }, 1500); // show gif for 1.5s after click
+    };
 
-    const showGif = hovered || clicked
+    const showGif = hovered || clicked;
 
     return (
       <button
@@ -186,7 +174,7 @@ export default function PostCard({
         aria-pressed={selected}
         title={emojiName}
         className={`flex items-center gap-2 text-light-secondary text-sm duration-200 ${
-          selected ? 'bg-white/10 text-light p-1 rounded-md' : ''
+          selected ? "bg-white/10 text-light p-1 rounded-md" : ""
         }`}
         // keep appearance identical to previous buttons
       >
@@ -205,11 +193,11 @@ export default function PostCard({
         </span>
         <span className="font-medium">{count}</span>
       </button>
-    )
+    );
   }
 
   return (
-    <article className="bg-dark-secondary border border-dark-border rounded-lg p-5 md:p-6">
+    <article className="bg-dark-secondary border border-[color:var(--accent)]/20 rounded-lg p-5 md:p-6">
       {/* Post Header: Avatar and Author Info */}
       <div className="flex items-start gap-3">
         <Link href={is_anonymous ? "#" : `/profile/${author.id}`} className="flex-shrink-0">
@@ -242,10 +230,7 @@ export default function PostCard({
         <div>
           {author?.id === currentUserId ? (
             !isPostDeleting ? (
-              <Trash2
-                className="size-5 text-accent cursor-pointer"
-                onClick={handlePostDelete}
-              />
+              <Trash2 className="size-5 text-accent cursor-pointer" onClick={handlePostDelete} />
             ) : (
               <svg
                 className="size-5 animate-spin text-accent"
@@ -261,7 +246,7 @@ export default function PostCard({
               </svg>
             )
           ) : (
-            ''
+            ""
           )}
         </div>
       </div>
@@ -286,7 +271,7 @@ export default function PostCard({
               >
                 <span className="text-xl leading-none">{emoji}</span>
                 <span className="font-medium">{count}</span>
-              </button>
+              </ReactionEmojiButton>
             );
           })}
 
@@ -422,58 +407,50 @@ function Comment({ comment }) {
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true });
 
   const handleCommentDelete = async () => {
-    setIsCommentDeleting(true)
+    setIsCommentDeleting(true);
     try {
-      if (author?.id !== currentUserId) return
-      const deleteCommentResponse = await axios.delete(
-        '/api/post/comment/delete',
-        {
-          data: {
-            commentId: commentId,
-          },
+      if (author?.id !== currentUserId) return;
+      const deleteCommentResponse = await axios.delete("/api/post/comment/delete", {
+        data: {
+          commentId: commentId,
         },
-      )
+      });
       if (deleteCommentResponse.status === 200) {
         try {
-          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
+          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY);
           if (cachedData) {
-            let updatedComments
-            const parsedCacheData = JSON.parse(cachedData)
+            let updatedComments;
+            const parsedCacheData = JSON.parse(cachedData);
             const updatedPosts = parsedCacheData.posts.map((post) => {
               if (post.id === postId) {
-                updatedComments = post.comments.filter(
-                  (comment) => comment.id !== commentId,
-                )
+                updatedComments = post.comments.filter((comment) => comment.id !== commentId);
                 return {
                   ...post,
                   comments: updatedComments,
-                }
+                };
               }
-              return post
-            })
+              return post;
+            });
             const updateCacheData = {
               ...parsedCacheData,
               posts: updatedPosts,
-            }
-            sessionStorage.setItem(
-              FEED_CACHE_KEY,
-              JSON.stringify(updateCacheData),
-            )
-            setComments(updatedComments ? updatedComments : [])
+            };
+            sessionStorage.setItem(FEED_CACHE_KEY, JSON.stringify(updateCacheData));
+            setComments(updatedComments ? updatedComments : []);
           }
         } catch (error) {
           console.error(
-            'Error occured while clearing deleted comments from session storage: ',
-            error,
-          )
+            "Error occured while clearing deleted comments from session storage: ",
+            error
+          );
         }
       }
     } catch (error) {
-      console.error('Error occured while deleting a comment: ', error)
+      console.error("Error occured while deleting a comment: ", error);
     } finally {
-      setIsCommentDeleting(false)
+      setIsCommentDeleting(false);
     }
-  }
+  };
   return (
     <div className="flex items-start gap-3">
       <Link href={`/profile/${author.id}`} className="flex-shrink-0">
@@ -524,8 +501,8 @@ function AddComment({ currentUserAvatar, postId, onCommentPosted, isUserAuthenti
         setIsEditing(false);
       }
       // Reset the form after posting
-      setCommentText('')
-      setIsEditing(false)
+      setCommentText("");
+      setIsEditing(false);
     } catch (error) {
       console.error("Error posting comment:", error);
     } finally {

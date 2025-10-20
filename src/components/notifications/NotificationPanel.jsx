@@ -1,25 +1,25 @@
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { formatDistanceToNow } from 'date-fns'
-import NotificationItem from './NotificationItem'
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { formatDistanceToNow } from "date-fns";
+import NotificationItem from "./NotificationItem";
 
 export default function NotificationPanel({ setUnreadCount }) {
-  const [notifications, setNotifications] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
 
-      const { data: userData } = await supabase.auth.getUser()
+      const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) {
-        setIsLoading(false)
-        return
+        setIsLoading(false);
+        return;
       }
 
       const { data, error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .select(
           `
           id,
@@ -32,15 +32,15 @@ export default function NotificationPanel({ setUnreadCount }) {
             username,
             avatar_url
           )
-        `,
+        `
         )
-        .eq('recipient_user_id', userData.user.id)
-        .order('created_at', { ascending: false })
-        .limit(20)
+        .eq("recipient_user_id", userData.user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
 
       if (error) {
-        console.error('Error fetching notifications:', error)
-        setNotifications([])
+        console.error("Error fetching notifications:", error);
+        setNotifications([]);
       } else if (data) {
         const formattedNotifications = data.map((n) => ({
           id: n.id,
@@ -53,66 +53,57 @@ export default function NotificationPanel({ setUnreadCount }) {
             avatar: n.triggerUser.avatar_url, // Use avatar_url for the avatar
           },
           // Use post_id to build the link, or profile link as a fallback
-          postLink: n.post_id
-            ? `/post/${n.post_id}`
-            : `/profile/${n.triggerUser.id}`,
+          postLink: n.post_id ? `/post/${n.post_id}` : `/profile/${n.triggerUser.id}`,
           // Format the timestamp into a "time ago" string
           time: formatDistanceToNow(new Date(n.created_at), {
             addSuffix: true,
           }),
-        }))
-        setNotifications(formattedNotifications)
+        }));
+        setNotifications(formattedNotifications);
 
         // After fetching, mark the unread ones as read
-        markAsRead(data)
+        markAsRead(data);
       }
-      setIsLoading(false)
-    }
+      setIsLoading(false);
+    };
 
     // This function marks newly fetched unread notifications as read in the DB
     const markAsRead = async (fetchedNotifications) => {
-      const unreadIds = fetchedNotifications
-        .filter((n) => !n.is_read)
-        .map((n) => n.id)
+      const unreadIds = fetchedNotifications.filter((n) => !n.is_read).map((n) => n.id);
 
       if (unreadIds.length > 0) {
-        await supabase
-          .from('notifications')
-          .update({ is_read: true })
-          .in('id', unreadIds)
+        await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds);
       }
-    }
+    };
 
-    fetchNotifications()
-  }, [supabase])
+    fetchNotifications();
+  }, [supabase]);
 
   // ADD THIS handler for the "Mark all as read" button
   const handleMarkAllAsRead = async () => {
     const {
       data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
     // Update all of this user's notifications to be read
     const { error } = await supabase
-      .from('notifications')
+      .from("notifications")
       .update({ is_read: true })
-      .eq('recipient_user_id', user.id)
-      .eq('is_read', false) // Only update unread ones
+      .eq("recipient_user_id", user.id)
+      .eq("is_read", false); // Only update unread ones
 
     if (!error) {
       // Update the local state to reflect the change immediately
-      setNotifications((current) =>
-        current.map((n) => ({ ...n, isRead: true })),
-      )
-      setUnreadCount(0) // Update the bell's count
+      setNotifications((current) => current.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0); // Update the bell's count
     } else {
-      console.error('Error marking all as read:', error)
+      console.error("Error marking all as read:", error);
     }
-  }
+  };
 
   return (
-    <div className="absolute top-full right-[-50px] md:right-0 mt-3 w-[330px] md:w-[400px] bg-dark-secondary border border-dark-border rounded-lg shadow-2xl z-50">
+    <div className="absolute top-full right-[-50px] md:right-0 mt-3 w-[330px] md:w-[400px] bg-dark-secondary border border-[color:var(--accent)]/30 rounded-lg shadow-2xl z-50">
       <div className="p-3 border-b border-dark-border">
         <h3 className="font-semibold text-light">Notifications</h3>
       </div>
@@ -121,13 +112,9 @@ export default function NotificationPanel({ setUnreadCount }) {
         {isLoading ? (
           <p className="text-center text-light-secondary p-8">Loading...</p>
         ) : notifications.length > 0 ? (
-          notifications.map((notif) => (
-            <NotificationItem key={notif.id} notification={notif} />
-          ))
+          notifications.map((notif) => <NotificationItem key={notif.id} notification={notif} />)
         ) : (
-          <p className="text-center text-light-secondary p-8">
-            You have no new notifications.
-          </p>
+          <p className="text-center text-light-secondary p-8">You have no new notifications.</p>
         )}
       </div>
       <div className="p-2 border-t border-dark-border text-center">
@@ -141,5 +128,5 @@ export default function NotificationPanel({ setUnreadCount }) {
         </button>
       </div>
     </div>
-  )
+  );
 }

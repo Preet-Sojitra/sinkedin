@@ -1,77 +1,71 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Camera, X } from "lucide-react"
-import Image from "next/image"
-import { createClient } from "@/lib/supabase/client"
-import { useUser } from "@/contexts/UserContext"
-import axios from "axios"
+import { useState } from "react";
+import { Camera, X } from "lucide-react";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/contexts/UserContext";
+import axios from "axios";
 
-export default function EditProfileModal({
-  initialProfile,
-  onClose,
-  onProfileUpdate,
-}) {
-  const { refreshProfile } = useUser()
-  const [username, setUsername] = useState(initialProfile.username)
-  const [headline, setHeadline] = useState(initialProfile.headline || "")
-  const [bio, setBio] = useState(initialProfile.bio || "")
-  const [avatarPreview, setAvatarPreview] = useState(initialProfile.avatar_url)
-  const [avatarFile, setAvatarFile] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+export default function EditProfileModal({ initialProfile, onClose, onProfileUpdate }) {
+  const { refreshProfile } = useUser();
+  const [username, setUsername] = useState(initialProfile.username);
+  const [headline, setHeadline] = useState(initialProfile.headline || "");
+  const [bio, setBio] = useState(initialProfile.bio || "");
+  const [avatarPreview, setAvatarPreview] = useState(initialProfile.avatar_url);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleAvatarUpload = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
-        setErrorMessage("Please upload a valid image under 5MB")
-        return
+        setErrorMessage("Please upload a valid image under 5MB");
+        return;
       }
-      setAvatarFile(file)
-      const reader = new FileReader()
-      reader.onload = (e) => setAvatarPreview(e.target.result)
-      reader.readAsDataURL(file)
-      setErrorMessage("")
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setAvatarPreview(e.target.result);
+      reader.readAsDataURL(file);
+      setErrorMessage("");
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setErrorMessage("")
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
 
-    const supabase = createClient()
+    const supabase = createClient();
     const {
       data: { user },
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
     if (!user) {
-      setErrorMessage("Authentication error. Please log in again.")
-      setLoading(false)
-      return
+      setErrorMessage("Authentication error. Please log in again.");
+      setLoading(false);
+      return;
     }
 
-    let avatarUrl = initialProfile.avatar_url
+    let avatarUrl = initialProfile.avatar_url;
 
     // If a new avatar file was selected, upload it first
     if (avatarFile) {
-      const fileExt = avatarFile.name.split(".").pop()
-      const fileName = `${Date.now()}.${fileExt}`
-      const filePath = `${user.id}/${fileName}`
+      const fileExt = avatarFile.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, avatarFile)
+        .upload(filePath, avatarFile);
 
       if (uploadError) {
-        setErrorMessage("Failed to upload new avatar.")
-        setLoading(false)
-        return
+        setErrorMessage("Failed to upload new avatar.");
+        setLoading(false);
+        return;
       }
 
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(uploadData.path)
-      avatarUrl = urlData.publicUrl
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(uploadData.path);
+      avatarUrl = urlData.publicUrl;
     }
 
     try {
@@ -80,31 +74,27 @@ export default function EditProfileModal({
         headline,
         bio,
         avatar: avatarUrl, // This could be the new URL or the original one
-      })
+      });
 
       if (response.status === 200) {
-        refreshProfile() // Update the global user context
-        onProfileUpdate() // This will trigger a refresh on the parent page
-        onClose() // Close the modal
+        refreshProfile(); // Update the global user context
+        onProfileUpdate(); // This will trigger a refresh on the parent page
+        onClose(); // Close the modal
       }
     } catch (error) {
-      const apiError =
-        error.response?.data?.error || "An unexpected error occurred."
-      setErrorMessage(apiError)
+      const apiError = error.response?.data?.error || "An unexpected error occurred.";
+      setErrorMessage(apiError);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
-      <div className="bg-dark-secondary rounded-lg border border-dark-border w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-dark-secondary rounded-lg border border-[color:var(--accent)]/30 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b border-dark-border">
           <h2 className="text-xl font-bold text-light">Edit Profile</h2>
-          <button
-            onClick={onClose}
-            className="text-light-secondary hover:text-light"
-          >
+          <button onClick={onClose} className="text-light-secondary hover:text-light">
             <X size={24} />
           </button>
         </div>
@@ -132,17 +122,11 @@ export default function EditProfileModal({
               </label>
             </div>
           </div>
-          {errorMessage && (
-            <p className="mb-4 text-sm text-red-500 text-center">
-              {errorMessage}
-            </p>
-          )}
+          {errorMessage && <p className="mb-4 text-sm text-red-500 text-center">{errorMessage}</p>}
           <form onSubmit={handleSubmit}>
             {/* Inputs are similar to your create profile page */}
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2 text-light">
-                Username
-              </label>
+              <label className="block text-sm font-medium mb-2 text-light">Username</label>
               <input
                 type="text"
                 value={username}
@@ -152,9 +136,7 @@ export default function EditProfileModal({
               />
             </div>
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2 text-light">
-                Headline
-              </label>
+              <label className="block text-sm font-medium mb-2 text-light">Headline</label>
               <input
                 type="text"
                 value={headline}
@@ -164,9 +146,7 @@ export default function EditProfileModal({
               />
             </div>
             <div className="mb-8">
-              <label className="block text-sm font-medium mb-2 text-light">
-                Bio
-              </label>
+              <label className="block text-sm font-medium mb-2 text-light">Bio</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -196,5 +176,5 @@ export default function EditProfileModal({
         </div>
       </div>
     </div>
-  )
+  );
 }

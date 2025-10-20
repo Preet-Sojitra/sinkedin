@@ -9,7 +9,8 @@ export async function createClient() {
         // minimal stubs used by the app
         getUser: async () => ({ data: { user: null }, error: null }),
         getSession: async () => ({ data: { session: null }, error: null }),
-        onAuthStateChange: () => ({ data: null }),
+        onAuthStateChange: () => ({ data: { subscriber: { unsubscribe: () => {} } } }),
+        signOut: async () => ({ error: null }),
       },
       // Provide a chainable query builder that resolves to an empty result set.
       from: () => {
@@ -23,9 +24,25 @@ export async function createClient() {
           limit() {
             return builder;
           },
+          eq() {
+            return builder;
+          },
+          single() {
+            return builder;
+          },
           range: async () => ({ data: [], error: null }),
+          // Add these methods that might be called
+          insert: async () => ({ data: null, error: null }),
+          update: async () => ({ data: null, error: null }),
+          delete: async () => ({ data: null, error: null }),
         };
         return builder;
+      },
+      storage: {
+        from: () => ({
+          upload: async () => ({ data: null, error: null }),
+          getPublicUrl: () => ({ data: { publicUrl: "" } }),
+        }),
       },
     };
   }

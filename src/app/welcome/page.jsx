@@ -229,7 +229,10 @@ export default function Page() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2 text-light">
-            Welcome to S<span className="line-through text-accent">in</span>
+            Welcome to S
+            <strike className="font-bold text-accent" style={{ color: "#e03131" }}>
+              in
+            </strike>
             kedIn!
           </h1>
           <p className="text-lg text-light-secondary">
@@ -238,7 +241,7 @@ export default function Page() {
         </div>
 
         {/* Main Card */}
-        <div className="rounded-lg border p-8 mb-6 bg-dark-secondary border-dark-border">
+        <div className="rounded-lg border p-8 mb-6 bg-dark-secondary border-[color:var(--accent)]/30">
           {/* Avatar Section */}
           <div className="text-center mb-8">
             <div className="relative inline-block">

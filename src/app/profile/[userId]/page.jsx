@@ -115,12 +115,12 @@ export default async function UserProfilePage({ params }) {
 
   return (
     <main className="max-w-[800px] mx-auto my-8 px-6">
-      <div className="bg-dark-secondary border border-dark-border rounded-lg p-8">
+      <div className="bg-dark-secondary border border-[color:var(--accent)]/30 rounded-lg p-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <img
             src={profile.avatar_url || "/default_avatar.jpg"}
             alt={`${profile.username}'s avatar`}
-            className="w-32 h-32 rounded-full border-2 border-dark-border"
+            className="w-32 h-32 rounded-full border-2 border-[color:var(--accent)]/50"
           />
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-3xl font-bold text-light">{profile.username}</h1>
@@ -147,7 +147,7 @@ export default async function UserProfilePage({ params }) {
             )}
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-dark-border">
+        <div className="mt-8 pt-6 border-t border-[color:var(--accent)]/30">
           <h2 className="text-xl font-semibold text-light">About</h2>
           <p className="text-light-secondary mt-2 whitespace-pre-wrap">
             {profile.bio || "This user prefers to keep their failures a mystery..."}

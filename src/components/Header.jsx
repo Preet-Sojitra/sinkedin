@@ -10,14 +10,18 @@ export default function Header() {
   const { profile, isLoading } = useUser();
 
   return (
-    <header className="bg-dark-secondary border-b border-dark-border sticky top-0 z-50">
+    <header className="bg-dark-secondary/80 backdrop-blur-md border-b border-[color:var(--accent)] sticky top-0 z-50">
       <div className="max-w-[800px] mx-auto flex items-center justify-between px-5 py-3 md:px-6">
         <Link
           href="/feed"
           className="text-[1.8rem] font-bold text-light no-underline"
           scroll={false}
         >
-          S<strike className="text-accent no-underline">in</strike>kedIn
+          S
+          <strike className="font-bold text-accent" style={{ color: "#e03131" }}>
+            in
+          </strike>
+          kedIn
         </Link>
 
         <div className="flex items-center gap-3 md:gap-4">

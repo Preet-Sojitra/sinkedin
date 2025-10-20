@@ -122,7 +122,7 @@ export default function ComposePost({ onPostCreated }) {
   };
 
   return (
-    <div className="bg-dark-secondary border border-dark-border rounded-lg p-5 md:p-6">
+    <div className="bg-dark-secondary border border-[color:var(--accent)]/20 rounded-lg p-5 md:p-6">
       <textarea
         className="w-full bg-dark border border-dark-border rounded-lg px-4 py-3 text-light text-base resize-y min-h-[100px] placeholder:text-light-secondary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
         placeholder={

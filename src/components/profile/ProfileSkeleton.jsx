@@ -1,7 +1,7 @@
 function ProfileSkeleton() {
   return (
     <main className="max-w-[800px] mx-auto my-8 px-6">
-      <div className="bg-dark-secondary border border-dark-border rounded-lg p-8 animate-pulse">
+      <div className="bg-dark-secondary border border-[color:var(--accent)]/30 rounded-lg p-8 animate-pulse">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="w-32 h-32 bg-dark-border rounded-full flex-shrink-0"></div>
 
@@ -13,7 +13,7 @@ function ProfileSkeleton() {
             <div className="mt-6 h-10 w-44 bg-dark-border rounded-lg"></div>
           </div>
         </div>
-        <div className="mt-8 pt-6 border-t border-dark-border">
+        <div className="mt-8 pt-6 border-t border-[color:var(--accent)]/30">
           <div className="h-7 bg-dark-border rounded w-24 mb-4"></div>
           <div className="space-y-3">
             <div className="h-4 bg-dark-border rounded w-full"></div>
@@ -23,7 +23,7 @@ function ProfileSkeleton() {
         </div>
       </div>
     </main>
-  )
+  );
 }
 
-export default ProfileSkeleton
+export default ProfileSkeleton;

@@ -7,19 +7,23 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-dark">
       {/* Hero Section */}
-      <section className="bg-dark-secondary border-b border-dark-border">
+      <section className="bg-dark-secondary border-b border-[color:var(--accent)]">
         <div className="container mx-auto px-6 py-20">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-10 md:mb-0">
               <h1 className="text-5xl font-bold text-light mb-4">
-                S<strike className="text-accent no-underline">in</strike>kedIn
+                S
+                <strike className="font-bold text-accent" style={{ color: "#e03131" }}>
+                  in
+                </strike>
+                kedIn
               </h1>
-              <p className="text-light-secondary text-xl mb-6">
+              <p className="text-gray-400 text-base mb-6">
                 Linkedin's Darker, Funnier and More Honest Cousin
               </p>
               <p className="text-gray-300 mb-8 text-lg">
                 Job hunt got you feeling like a melted candle? LinkedIn feed look like a parade of
-                humblebrags you can't relate to? " "<b>Welcome home.</b>
+                humblebrags you can't relate to? <b>Welcome home.</b>
               </p>
               <div className="space-y-2 space-x-4 lg:space-y-0 lg:flex lg:space-x-4">
                 <Link
@@ -30,15 +34,15 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/feed"
-                  className="bg-gray-700 hover:bg-gray-600 border border-dark-border text-light px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
+                  className="bg-transparent hover:bg-accent/10 border-2 border-[color:var(--accent)] text-light px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
                 >
                   Explore the Chaos
                 </Link>
               </div>
             </div>
             <div className="md:w-1/2">
-              {/* Warning Box */}
-              <div className="bg-[color:var(--accent)/0.12] border border-[color:var(--accent)/0.24] rounded-lg p-6">
+              {/* Warning Box - reddish background and border */}
+              <div className="bg-[rgba(224,49,49,0.12)] border border-[color:var(--accent)] rounded-lg p-6">
                 <div className="flex items-start">
                   <div className="text-accent mr-3 mt-1">⚠️</div>
                   <div>
@@ -64,7 +68,11 @@ export default function Home() {
           <h2 className="text-4xl font-bold text-center mb-16 text-light">
             Why Choose{" "}
             <span className="text-light">
-              S<strike className="text-accent no-underline">in</strike>kedIn
+              S
+              <strike className="text-accent font-bold" style={{ color: "#e03131" }}>
+                in
+              </strike>
+              kedIn
             </span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -93,7 +101,7 @@ export default function Home() {
       </section>
 
       {/* Call to Action Section */}
-      <section className="py-20 bg-dark-secondary border-t border-dark-border">
+      <section className="py-20 bg-dark-secondary border-t border-[color:var(--accent)]">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold mb-6 text-light">Ready to Embrace the Chaos?</h2>
           <p className="text-light-secondary text-xl mb-8 max-w-2xl mx-auto">
@@ -114,7 +122,7 @@ export default function Home() {
 
 function FeatureCard({ icon, title, description }) {
   return (
-    <div className="bg-dark-secondary border border-dark-border p-6 rounded-lg hover:border-accent transition-colors">
+    <div className="bg-dark-secondary border border-[color:var(--accent)] p-6 rounded-lg transition-colors">
       <div className="text-accent mb-4 flex justify-center">{icon}</div>
       <h3 className="text-light text-xl font-semibold mb-3">{title}</h3>
       <p className="text-light-secondary">{description}</p>

@@ -231,6 +231,7 @@ export default function HomePage() {
                     post={post}
                     currentUserId={currentUser?.id}
                     currentUserAvatar={currentUser?.avatar_url}
+                    setPosts={setPosts}
                   />
                 </div>
               );

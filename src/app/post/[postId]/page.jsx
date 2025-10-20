@@ -1,10 +1,9 @@
-import Header from '@/components/Header'
-import PostCard from '@/components/feed/PostCard'
-import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
+import PostCard from "@/components/feed/PostCard";
+import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import Link from "next/link";
 
-const INITIAL_COMMENT_FETCH_COUNT = 10
+const INITIAL_COMMENT_FETCH_COUNT = 10;
 
 const transformPostData = (post) => {
   const reactionCounts = {
@@ -12,12 +11,12 @@ const transformPostData = (post) => {
     Clown: 0,
     Skull: 0,
     Relatable: 0,
-  }
+  };
   post.reactions.forEach((reaction) => {
     if (reactionCounts.hasOwnProperty(reaction.reaction)) {
-      reactionCounts[reaction.reaction]++
+      reactionCounts[reaction.reaction]++;
     }
-  })
+  });
 
   // 2. Transform comments to match expected frontend structure
   const formattedComments = post.comments.map((comment) => ({
@@ -29,7 +28,7 @@ const transformPostData = (post) => {
       username: comment.profiles.username,
     },
     avatar_url: comment.profiles.avatar_url,
-  }))
+  }));
 
   return {
     id: post.id,
@@ -47,16 +46,16 @@ const transformPostData = (post) => {
     reaction_counts: reactionCounts,
     reaction: post.reactions, // Pass the raw reactions array for checking user's reaction
     comments: formattedComments,
-  }
-}
+  };
+};
 
 // This is an async Server Component
 export default async function PostPage({ params }) {
-  const { postId } = await params
-  const supabase = await createClient()
+  const { postId } = await params;
+  const supabase = await createClient();
 
   const { data: rawPost, error } = await supabase
-    .from('posts')
+    .from("posts")
     .select(
       `
         id,
@@ -83,54 +82,51 @@ export default async function PostPage({ params }) {
             avatar_url
           )
         )
-      `,
+      `
     )
-    .eq('id', postId)
-    .order('created_at', { referencedTable: 'comments', ascending: false })
-    .limit(INITIAL_COMMENT_FETCH_COUNT, { foreignTable: 'comments' })
-    .single()
+    .eq("id", postId)
+    .order("created_at", { referencedTable: "comments", ascending: false })
+    .limit(INITIAL_COMMENT_FETCH_COUNT, { foreignTable: "comments" })
+    .single();
 
   if (error || !rawPost) {
-    notFound()
+    notFound();
   }
 
-  const post = transformPostData(rawPost)
+  const post = transformPostData(rawPost);
 
   // Fetch the current user's info to pass to the PostCard
   const {
     data: { user },
-  } = await supabase.auth.getUser()
-  let profile = null
+  } = await supabase.auth.getUser();
+  let profile = null;
   if (user) {
     const { data: profileData } = await supabase
-      .from('profiles')
-      .select('avatar_url')
-      .eq('id', user.id)
-      .single()
-    profile = profileData
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id)
+      .single();
+    profile = profileData;
   }
 
   return (
-    <>
-      <Header />
-      <main className="max-w-[800px] mx-auto my-6 px-5 md:my-8 md:px-6 flex flex-col gap-6">
-        <div className="self-start">
-          <Link
-            href="/feed"
-            className="text-sm text-light-secondary hover:text-light transition-colors"
-          >
-            ← Back to Feed
-          </Link>
-        </div>
+    <main className="max-w-[800px] mx-auto my-6 px-5 md:my-8 md:px-6 flex flex-col gap-6">
+      <div className="self-start">
+        <Link
+          href="/feed"
+          className="text-sm text-light-secondary hover:text-light transition-colors"
+        >
+          ← Back to Feed
+        </Link>
+      </div>
 
-        {/* Render the single PostCard with the *transformed* data */}
-        <PostCard
-          key={post.id}
-          post={post}
-          currentUserId={user?.id}
-          currentUserAvatar={profile?.avatar_url}
-        />
-      </main>
-    </>
-  )
+      {/* Render the single PostCard with the *transformed* data */}
+      <PostCard
+        key={post.id}
+        post={post}
+        currentUserId={user?.id}
+        currentUserAvatar={profile?.avatar_url}
+      />
+    </main>
+  );
 }

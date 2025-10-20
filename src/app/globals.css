@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Consolidated dark theme variables (matches live screenshots) */
 :root {
@@ -34,8 +34,8 @@
   --background: #ffffff;
   --foreground: #0b0f14;
   --muted: #6b7280;
-  --card: #f6f7fa;
-  --border: #e6e9ee;
+  --card: #f9fafb;
+  --border: #d1d5db;
   --accent: #e03131; /* keep accent red */
   --accent-hover: #d12929;
   --primary-foreground: #ffffff;
@@ -55,7 +55,7 @@
   color: var(--muted) !important;
 }
 .light .bg-dark {
-  background-color: var(--card) !important;
+  background-color: #ffffff !important;
 }
 .light .bg-dark-secondary {
   background-color: var(--card) !important;
@@ -63,16 +63,15 @@
 .light .border-dark-border {
   border-color: var(--border) !important;
 }
-.light .border-dark-border,
-.light .border-dark-border * {
-  color: inherit;
-}
 .light .bg-accent {
   background-color: var(--accent) !important;
 }
 .light .btn-accent {
   background-color: var(--accent) !important;
   color: var(--primary-foreground) !important;
+}
+.light .bg-dark-border {
+  background-color: #e5e7eb !important;
 }
 
 /* Body uses the theme variables */
@@ -85,14 +84,38 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
-    Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 strike {
   text-decoration: line-through;
+}
+
+/* Scrollbar styling for better aesthetics */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Focus visible for better accessibility */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Small utility: make accent buttons consistent when authors used text-white */

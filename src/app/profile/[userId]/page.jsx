@@ -161,6 +161,13 @@ export default async function UserProfilePage({ params }) {
                 "This user prefers to keep their failures a mystery..."}
             </p>
           </div>
+          <div className="mt-8 pt-6 border-t border-dark-border">
+            <h2 className="text-xl font-semibold text-light">Biggest L</h2>
+            <p className="text-light-secondary mt-2 whitespace-pre-wrap">
+              {profile.biggest_l ||
+                "This user hasn't shared their biggest L yet."}
+            </p>
+          </div>
         </div>
       </main>
     </>

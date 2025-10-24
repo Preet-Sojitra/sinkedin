@@ -14,12 +14,24 @@ export async function POST(request) {
   }
 
   // 2. Parse the request body
-  const { username, headline, bio, avatar: newAvatarUrl } = await request.json()
+  const {
+    username,
+    headline,
+    bio,
+    biggestL,
+    avatar: newAvatarUrl,
+  } = await request.json()
 
   // 3. Validate input data (same as create)
   if (!username || username.length < 3 || username.length > 50) {
     return NextResponse.json(
       { error: "Username must be between 3 and 50 characters" },
+      { status: 400 }
+    )
+  }
+  if (biggestL && biggestL.length > 500) {
+    return NextResponse.json(
+      { error: "Biggest L must be less than 500 characters" },
       { status: 400 }
     )
   }
@@ -91,6 +103,7 @@ export async function POST(request) {
       username,
       headline,
       bio,
+      biggest_l: biggestL,
       // Only update avatar_url if a new one was provided
       ...(newAvatarUrl && { avatar_url: newAvatarUrl }),
     })

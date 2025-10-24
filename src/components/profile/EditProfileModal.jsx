@@ -16,6 +16,7 @@ export default function EditProfileModal({
   const [username, setUsername] = useState(initialProfile.username)
   const [headline, setHeadline] = useState(initialProfile.headline || "")
   const [bio, setBio] = useState(initialProfile.bio || "")
+  const [biggestL, setBiggestL] = useState(initialProfile.biggest_l || "")
   const [avatarPreview, setAvatarPreview] = useState(initialProfile.avatar_url)
   const [avatarFile, setAvatarFile] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -79,6 +80,7 @@ export default function EditProfileModal({
         username,
         headline,
         bio,
+        biggestL,
         avatar: avatarUrl, // This could be the new URL or the original one
       })
 
@@ -172,6 +174,18 @@ export default function EditProfileModal({
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
                 maxLength={200}
+                className="w-full px-4 py-3 rounded-lg border outline-none transition-colors resize-none bg-dark border-dark-border text-light"
+              />
+            </div>
+            <div className="mb-8">
+              <label className="block text-sm font-medium mb-2 text-light">
+                Biggest L
+              </label>
+              <textarea
+                value={biggestL}
+                onChange={(e) => setBiggestL(e.target.value)}
+                rows={3}
+                maxLength={500}
                 className="w-full px-4 py-3 rounded-lg border outline-none transition-colors resize-none bg-dark border-dark-border text-light"
               />
             </div>

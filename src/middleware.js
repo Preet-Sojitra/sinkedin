@@ -1,13 +1,9 @@
-// middleware.js
-import { NextResponse } from "next/server"
-import { createServerClient } from "@supabase/ssr"
+import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request) {
-  // This `response` object is used to set cookies.
-  let supabaseResponse = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+  const response = NextResponse.next({
+    request: { headers: request.headers },
   })
 
   const supabase = createServerClient(
@@ -18,57 +14,63 @@ export async function middleware(request) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookies) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              request.cookies.set(name, value, options)
-            )
-            supabaseResponse = NextResponse.next({
-              request: {
-                headers: request.headers,
-              },
-            })
-            cookiesToSet.forEach(({ name, value, options }) => {
-              supabaseResponse.cookies.set(name, value, options)
+            cookies.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
             })
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // Ignore errors in server components
           }
         },
       },
-    }
+    },
   )
 
-  // Refresh session if expired - required for Server Components
-  // This will also make the session available to the rest of your app.
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  // Optional: Route protection
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user && request.nextUrl.pathname.startsWith("/welcome")) {
-    // If the user is not logged in and tries to access a protected route,
-    // redirect them to the login page.
-    return NextResponse.redirect(new URL("/auth/login", request.url))
+  const url = request.nextUrl
+
+  // -------------------------------
+  // Not logged in → redirect to login for protected routes
+  // -------------------------------
+  const protectedRoutes = ['/feed', '/profile']
+  if (
+    !user &&
+    protectedRoutes.some((route) => url.pathname.startsWith(route))
+  ) {
+    return NextResponse.redirect(new URL('/auth/login', url))
   }
 
-  // MUST return the response object
-  return supabaseResponse
+  // -------------------------------
+  // Logged in → check if profile exists
+  // -------------------------------
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    // If no profile → redirect to /welcome when accessing protected routes
+    if (
+      !profile &&
+      protectedRoutes.some((route) => url.pathname.startsWith(route))
+    ) {
+      return NextResponse.redirect(new URL('/welcome', url))
+    }
+
+    // Optional: if profile exists and user tries to visit /welcome → redirect to feed
+    if (profile && url.pathname.startsWith('/welcome')) {
+      return NextResponse.redirect(new URL('/feed', url))
+    }
+  }
+
+  return response
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
-  ],
+  // Only protect specific routes
+  matcher: ['/feed/:path*', '/profile/:path*'],
 }

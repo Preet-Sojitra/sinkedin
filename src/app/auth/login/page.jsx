@@ -1,22 +1,22 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Mail, AlertCircle } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
-import Link from "next/link"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Eye, EyeOff, Mail, AlertCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
 
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   })
   const [isLoading, setIsLoading] = useState(false)
   const [showError, setShowError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleInputChange = (e) => {
     setFormData({
@@ -29,7 +29,7 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     setShowError(false)
-    setErrorMessage("")
+    setErrorMessage('')
     const supabase = createClient()
 
     try {
@@ -39,20 +39,20 @@ export default function LoginPage() {
       })
 
       if (error) {
-        console.error("Login error:", error)
+        console.error('Login error:', error)
         setShowError(true)
-        setErrorMessage(error?.message || "An unexpected error occurred.")
+        setErrorMessage(error?.message || 'An unexpected error occurred.')
         return // Important to stop the function here
       }
 
       if (data.user) {
-        router.replace("/feed")
+        router.replace('/feed')
         router.refresh() // Ensures layout re-renders with new auth state
       }
     } catch (error) {
-      console.error("Login error:", error)
+      console.error('Login error:', error)
       setShowError(true)
-      setErrorMessage("An unexpected error occurred. Please try again.")
+      setErrorMessage('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -61,22 +61,22 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     const supabase = createClient()
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: 'google',
       options: {
         redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback`,
       },
     })
 
     if (error) {
-      console.error("Google login error:", error)
+      console.error('Google login error:', error)
       setShowError(true)
-      setErrorMessage(error?.message || "An unexpected error occurred.")
+      setErrorMessage(error?.message || 'An unexpected error occurred.')
       return
     }
 
     // Handle successful Google login if needed
     if (data.user) {
-      router.push("/feed")
+      router.push('/feed')
       router.refresh() // Ensures layout re-renders with new auth state
     }
   }
@@ -99,8 +99,8 @@ export default function LoginPage() {
           <div
             className="rounded-lg p-6 mb-8"
             style={{
-              backgroundColor: "rgba(224, 49, 49, 0.1)",
-              border: "1px solid rgba(224, 49, 49, 0.3)",
+              backgroundColor: 'rgba(224, 49, 49, 0.1)',
+              border: '1px solid rgba(224, 49, 49, 0.3)',
             }}
           >
             <div className="flex items-start">
@@ -214,7 +214,7 @@ export default function LoginPage() {
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     id="password"
                     name="password"
                     value={formData.password}
@@ -265,13 +265,13 @@ export default function LoginPage() {
                 className="w-full font-semibold py-3 px-4 rounded-lg transition-colors hover:opacity-90 bg-accent text-light"
                 disabled={isLoading}
               >
-                {isLoading ? "Logging in..." : "Back to the Disaster"}
+                {isLoading ? 'Logging in...' : 'Back to the Disaster'}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-light-secondary">
-                New to professional disasters?{" "}
+                New to professional disasters?{' '}
                 <Link
                   href="/auth/signup"
                   className="font-medium hover:opacity-70 transition-opacity text-accent"

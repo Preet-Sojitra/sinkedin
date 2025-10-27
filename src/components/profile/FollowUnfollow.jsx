@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import axios from "axios"
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
 export default function FollowUnfollowButton({
   currentUserId,
@@ -28,7 +28,7 @@ export default function FollowUnfollowButton({
     try {
       if (isFollowing) {
         // Unfollow logic
-        const response = await axios.delete("/api/profile/unfollow", {
+        const response = await axios.delete('/api/profile/unfollow', {
           data: { profileId: profileUserId },
         })
 
@@ -36,11 +36,11 @@ export default function FollowUnfollowButton({
           setIsFollowing(false)
           setFollowerCount((prevCount) => prevCount - 1) // Decrement count optimistically
         } else {
-          console.error("Failed to unfollow")
+          console.error('Failed to unfollow')
         }
       } else {
         // Follow logic
-        const response = await axios.post("/api/profile/follow", {
+        const response = await axios.post('/api/profile/follow', {
           profileId: profileUserId,
         })
 
@@ -48,12 +48,12 @@ export default function FollowUnfollowButton({
           setIsFollowing(true)
           setFollowerCount((prevCount) => prevCount + 1) // Increment count optimistically
         } else {
-          console.error("Failed to follow")
+          console.error('Failed to follow')
           // Handle error
         }
       }
     } catch (error) {
-      console.error("Error during follow/unfollow:", error)
+      console.error('Error during follow/unfollow:', error)
       // Handle network errors or other exceptions
     } finally {
       setLoading(false)
@@ -87,12 +87,12 @@ export default function FollowUnfollowButton({
           className={`px-4 py-2 rounded font-bold focus:outline-none focus:ring-2 focus:ring-opacity-75
           ${
             isFollowing
-              ? "bg-gray-300 text-gray-800 hover:bg-gray-400"
-              : "bg-accent text-light hover:bg-accent-hover"
+              ? 'bg-gray-300 text-gray-800 hover:bg-gray-400'
+              : 'bg-accent text-light hover:bg-accent-hover'
           }
-          ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+          ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          {loading ? "Loading..." : isFollowing ? "Following" : "Follow"}
+          {loading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
         </button>
       )}
     </div>

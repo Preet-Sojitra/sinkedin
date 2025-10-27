@@ -1,8 +1,8 @@
 // To be used in v2 -> where email verification needs to be handled
 
 // api/auth/signup/route.js
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/client"
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/client'
 
 export async function POST(request) {
   const { email, password, confirmPassword } = await request.json()
@@ -10,8 +10,8 @@ export async function POST(request) {
   // --- 1. Backend Validation ---
   if (!email || !password || !confirmPassword) {
     return NextResponse.json(
-      { error: "Email and password are required." },
-      { status: 400 }
+      { error: 'Email and password are required.' },
+      { status: 400 },
     )
   }
 
@@ -19,23 +19,23 @@ export async function POST(request) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
     return NextResponse.json(
-      { error: "Invalid email format." },
-      { status: 400 }
+      { error: 'Invalid email format.' },
+      { status: 400 },
     )
   }
 
   if (password !== confirmPassword) {
     return NextResponse.json(
-      { error: "Passwords do not match." },
-      { status: 400 }
+      { error: 'Passwords do not match.' },
+      { status: 400 },
     )
   }
 
   if (password.length < 6) {
     // Supabase has a default 6-character minimum, so we enforce it here.
     return NextResponse.json(
-      { error: "Password must be at least 6 characters long." },
-      { status: 400 }
+      { error: 'Password must be at least 6 characters long.' },
+      { status: 400 },
     )
   }
 
@@ -50,12 +50,12 @@ export async function POST(request) {
 
   // --- 3. Error Handling ---
   if (error) {
-    console.error("Supabase signup error:", error)
+    console.error('Supabase signup error:', error)
     // You can customize error messages based on the error code
-    if (error.code === "user_already_exists") {
+    if (error.code === 'user_already_exists') {
       return NextResponse.json(
-        { error: "A user with this email already exists." },
-        { status: 409 }
+        { error: 'A user with this email already exists.' },
+        { status: 409 },
       ) // 409 Conflict
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -67,9 +67,9 @@ export async function POST(request) {
   return NextResponse.json(
     {
       message:
-        "Confirmation email sent. Please check your inbox to complete signup.",
+        'Confirmation email sent. Please check your inbox to complete signup.',
       user: user,
     },
-    { status: 201 } // 201 Created
+    { status: 201 }, // 201 Created
   )
 }

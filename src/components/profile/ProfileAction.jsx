@@ -1,14 +1,14 @@
-"use client"
+'use client'
 
-import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import EditProfileModal from "./EditProfileModal"
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import EditProfileModal from './EditProfileModal'
 
 export default function EditProfileAndLogout({ profile }) {
   const router = useRouter()
   const [showError, setShowError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
@@ -19,14 +19,14 @@ export default function EditProfileAndLogout({ profile }) {
     if (error) {
       setIsLoading(false)
       setShowError(true)
-      setErrorMessage("Failed to log out. Please try again.")
-      console.error("Logout error:", error)
+      setErrorMessage('Failed to log out. Please try again.')
+      console.error('Logout error:', error)
       return
     } else {
       setIsLoading(false)
       setShowError(false)
-      setErrorMessage("")
-      router.push("/auth/login") // Redirect to login page after logout
+      setErrorMessage('')
+      router.push('/auth/login') // Redirect to login page after logout
       router.refresh() // Refresh the page to ensure state is updated
     }
   }

@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
-  const postId = searchParams.get("postId")
-  const offset = parseInt(searchParams.get("offset") || "0", 10)
-  const limit = parseInt(searchParams.get("limit") || "3", 10)
+  const postId = searchParams.get('postId')
+  const offset = parseInt(searchParams.get('offset') || '0', 10)
+  const limit = parseInt(searchParams.get('limit') || '3', 10)
 
   if (!postId) {
-    return NextResponse.json({ error: "postId is required" }, { status: 400 })
+    return NextResponse.json({ error: 'postId is required' }, { status: 400 })
   }
 
   try {
     const supabase = await createClient()
     const { data, error } = await supabase
-      .from("comments")
+      .from('comments')
       .select(
         `
         id,
@@ -25,17 +25,17 @@ export async function GET(request) {
           username,
           avatar_url
         )
-      `
+      `,
       )
-      .eq("post_id", postId)
-      .order("created_at", { ascending: false })
+      .eq('post_id', postId)
+      .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
     if (error) {
-      console.error("Error fetching more comments:", error)
+      console.error('Error fetching more comments:', error)
       return NextResponse.json(
-        { error: "Failed to fetch comments." },
-        { status: 500 }
+        { error: 'Failed to fetch comments.' },
+        { status: 500 },
       )
     }
 
@@ -54,10 +54,10 @@ export async function GET(request) {
 
     return NextResponse.json({ comments: formattedComments }, { status: 200 })
   } catch (error) {
-    console.error("Unexpected error fetching comments:", error)
+    console.error('Unexpected error fetching comments:', error)
     return NextResponse.json(
-      { error: "An unexpected error occurred." },
-      { status: 500 }
+      { error: 'An unexpected error occurred.' },
+      { status: 500 },
     )
   }
 }

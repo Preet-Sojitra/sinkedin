@@ -1,6 +1,6 @@
 // middleware.js
-import { NextResponse } from "next/server"
-import { createServerClient } from "@supabase/ssr"
+import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request) {
   // This `response` object is used to set cookies.
@@ -21,7 +21,7 @@ export async function middleware(request) {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              request.cookies.set(name, value, options)
+              request.cookies.set(name, value, options),
             )
             supabaseResponse = NextResponse.next({
               request: {
@@ -38,7 +38,7 @@ export async function middleware(request) {
           }
         },
       },
-    }
+    },
   )
 
   // Refresh session if expired - required for Server Components
@@ -51,10 +51,10 @@ export async function middleware(request) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user && request.nextUrl.pathname.startsWith("/welcome")) {
+  if (!user && request.nextUrl.pathname.startsWith('/welcome')) {
     // If the user is not logged in and tries to access a protected route,
     // redirect them to the login page.
-    return NextResponse.redirect(new URL("/auth/login", request.url))
+    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
   // MUST return the response object
@@ -69,6 +69,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
+    '/((?!_next/static|_next/image|favicon.ico|api/auth).*)',
   ],
 }

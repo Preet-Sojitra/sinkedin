@@ -1,18 +1,20 @@
-import Header from "@/components/Header"
-import { notFound } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
-import EditProfileAndLogout from "@/components/profile/ProfileAction"
-import FollowUnfollowButton from "@/components/profile/FollowUnfollow"
+import Header from '@/components/Header'
+import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
+import EditProfileAndLogout from '@/components/profile/ProfileAction'
+import FollowUnfollowButton from '@/components/profile/FollowUnfollow'
+import ChatButton from '@/components/profile/chatButton'
 
-async function getUserProfile(userId) {
+export async function getUserProfile(userId) {
+  // exporting this function for using in other pages
   const cookieStore = cookies()
   const supabase = await createClient(cookieStore)
 
   const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
     .single()
 
   // The 'single()' method returns an error if no row is found.
@@ -23,7 +25,8 @@ async function getUserProfile(userId) {
   return profile
 }
 
-async function getCurrentUser() {
+export async function getCurrentUser() {
+  // exporting this functions to reuse in other pages
   const cookieStore = cookies()
   const supabase = await createClient(cookieStore)
   const {
@@ -33,9 +36,9 @@ async function getCurrentUser() {
 }
 
 function formatJoinDate(dateString) {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
   })
 }
 
@@ -44,12 +47,12 @@ async function getFollowerCount(userId) {
   const supabase = await createClient(cookieStore)
 
   const { count, error } = await supabase
-    .from("relationships")
-    .select("follower_id", { count: "exact", head: true }) // Count the number of followers
-    .eq("following_id", userId)
+    .from('relationships')
+    .select('follower_id', { count: 'exact', head: true }) // Count the number of followers
+    .eq('following_id', userId)
 
   if (error) {
-    console.error("Error fetching follower count:", error)
+    console.error('Error fetching follower count:', error)
     return 0 // Return 0 in case of error
   }
   return count || 0
@@ -60,12 +63,12 @@ async function getFollowingCount(userId) {
   const supabase = await createClient(cookieStore)
 
   const { count, error } = await supabase
-    .from("relationships")
-    .select("following_id", { count: "exact", head: true }) // Count the number of users being followed
-    .eq("follower_id", userId)
+    .from('relationships')
+    .select('following_id', { count: 'exact', head: true }) // Count the number of users being followed
+    .eq('follower_id', userId)
 
   if (error) {
-    console.error("Error fetching following count:", error)
+    console.error('Error fetching following count:', error)
     return 0 // Return 0 in case of error
   }
   return count || 0
@@ -77,13 +80,13 @@ async function checkIfFollowing(followerId, followingId) {
   const supabase = await createClient(cookieStore)
 
   const { data, error } = await supabase
-    .from("relationships")
-    .select("*")
-    .eq("follower_id", followerId)
-    .eq("following_id", followingId)
+    .from('relationships')
+    .select('*')
+    .eq('follower_id', followerId)
+    .eq('following_id', followingId)
     .single()
 
-  if (error && error.code !== "PGRST116") {
+  if (error && error.code !== 'PGRST116') {
     // PGRST116 means no rows found, which is not an error in this context
     return false // Default to not following if there's an error
   }
@@ -121,7 +124,7 @@ export default async function UserProfilePage({ params }) {
         <div className="bg-dark-secondary border border-dark-border rounded-lg p-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             <img
-              src={profile.avatar_url || "/default_avatar.jpg"}
+              src={profile.avatar_url || '/default_avatar.jpg'}
               alt={`${profile.username}'s avatar`}
               className="w-32 h-32 rounded-full border-2 border-dark-border"
             />
@@ -146,6 +149,15 @@ export default async function UserProfilePage({ params }) {
                 />
               </div>
 
+              {
+                // button for chatting with other users
+                !isOwnProfile && (
+                  <div>
+                    <ChatButton profileUserId={profile.id} />
+                  </div>
+                )
+              }
+
               {/* Only show Edit and Logout buttons if it's the user's own profile */}
               {isOwnProfile && (
                 <div className="mt-6">
@@ -158,7 +170,7 @@ export default async function UserProfilePage({ params }) {
             <h2 className="text-xl font-semibold text-light">About</h2>
             <p className="text-light-secondary mt-2 whitespace-pre-wrap">
               {profile.bio ||
-                "This user prefers to keep their failures a mystery..."}
+                'This user prefers to keep their failures a mystery...'}
             </p>
           </div>
         </div>

@@ -7,6 +7,10 @@ import PostCardSkeleton from '@/components/feed/PostCardSkeleton'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
+import { FetchRealtimePost } from '@/lib/supabase/realtime'
+
+const FEED_CACHE_KEY = 'sinkedin_feed_cache'
+const SCROLL_POSITION_KEY = 'sinkedin_scroll_position'
 
 const fetchPosts = async (page) => {
   try {
@@ -88,17 +92,23 @@ export default function HomePage() {
     loadPosts()
   }, [page]) // This effect runs whenever 'page' changes
 
-  const handlePostCreated = (newPost) => {
-    // This function will be called when a new post is created
-    // You can update the posts state here to include the new post
-    setPosts((prevPosts) => [newPost, ...prevPosts])
+  const scrollOnPostCreate = () => {
+    // Clear cache when new post is created to show it at the top
+    try {
+      sessionStorage.removeItem(FEED_CACHE_KEY)
+      sessionStorage.removeItem(SCROLL_POSITION_KEY)
+      hasRestoredScroll.current = false
+    } catch (error) {
+      console.error('Error clearing cache:', error)
+    }
   }
 
   return (
     <>
       <Header />
+      <FetchRealtimePost setPosts={setPosts} />
       <main className="max-w-[800px] mx-auto my-6 px-5 md:my-8 md:px-6 flex flex-col gap-6">
-        <ComposePost onPostCreated={handlePostCreated} />
+        <ComposePost onPostCreated={scrollOnPostCreate} />
 
         {/* Use the isLoading state to conditionally render skeletons or posts */}
         {isLoading ? (

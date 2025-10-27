@@ -99,12 +99,6 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
     }
   }
 
-  // --- New function to handle optimistic UI update for new comments ---
-  const handleCommentPosted = (newComment) => {
-    // Add the new comment to the top of the list
-    setComments((prevComments) => [newComment, ...prevComments])
-  }
-
   const handleShareClick = () => {
     // Construct the full URL for the post
     const postUrl = `${window.location.origin}/post/${id}`
@@ -124,6 +118,23 @@ export default function PostCard({ post, currentUserId, currentUserAvatar }) {
         console.error('Failed to copy text: ', err)
         setCopyStatus('Failed to copy')
       })
+  }
+
+  const handlePostDelete = async () => {
+    setIsPostDeleting(true)
+    try {
+      if (author?.id !== currentUserId) return
+      await axios.delete('/api/post/delete', {
+        data: {
+          postId: id,
+          currentUserId: currentUserId,
+        },
+      })
+    } catch (error) {
+      console.error('Error while deleting the post: ', error)
+    } finally {
+      setIsPostDeleting(false)
+    }
   }
 
   const username = author?.username || 'AnonymousPanda'
@@ -268,19 +279,6 @@ function CommentSection({
     }
   }
 
-  if (!comments || comments.length === 0) {
-    return (
-      <div className="mt-4 pt-4 border-t border-dark-border">
-        <AddComment
-          currentUserAvatar={currentUserAvatar}
-          postId={postId}
-          onCommentPosted={onCommentPosted} // Pass handler to AddComment
-          isUserAuthenticated={isUserAuthenticated} // Pass authentication status
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="mt-4 pt-4 border-t border-dark-border flex flex-col gap-4">
       <AddComment
@@ -291,25 +289,34 @@ function CommentSection({
       />
 
       {/* Reverse the comments array for display to show newest first */}
-      {comments
-        .slice()
-        .reverse()
-        .map((comment) => (
-          <Comment key={comment.id} comment={comment} />
-        ))}
+      {comments && comments.length > 0 && (
+        <>
+          {comments
+            .slice()
+            .reverse()
+            .map((comment) => (
+              <Comment
+                key={comment.id}
+                comment={comment}
+                currentUserId={currentUserId}
+                postId={postId}
+                setComments={setComments}
+              />
+            ))}
 
-      {/* Logic for showing "Load More" button */}
-      <div className="flex gap-4">
-        {moreCommentsAvailable && comments.length > 0 && (
-          <button
-            onClick={handleLoadMore}
-            disabled={isLoading || !moreCommentsAvailable}
-            className="text-sm text-light-secondary hover:text-light transition-colors self-start disabled:cursor-wait"
-          >
-            {isLoading ? 'Loading...' : 'Load more comments'}
-          </button>
-        )}
-      </div>
+          <div className="flex gap-4">
+            {moreCommentsAvailable && comments.length > 0 && (
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoading || !moreCommentsAvailable}
+                className="text-sm text-light-secondary hover:text-light transition-colors self-start disabled:cursor-wait"
+              >
+                {isLoading ? 'Loading...' : 'Load more comments'}
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -318,7 +325,62 @@ function CommentSection({
 function Comment({ comment }) {
   const { author, avatar_url, body, created_at } = comment
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
+  const [isCommentDeleting, setIsCommentDeleting] = useState(false)
 
+  const handleCommentDelete = async () => {
+    setIsCommentDeleting(true)
+    try {
+      if (author?.id !== currentUserId) return
+      const deleteCommentResponse = await axios.delete(
+        '/api/post/comment/delete',
+        {
+          data: {
+            commentId: commentId,
+            currentUserId: currentUserId,
+          },
+        },
+      )
+      if (deleteCommentResponse.status === 200) {
+        try {
+          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
+          if (cachedData) {
+            let updatedComments
+            const parsedCacheData = JSON.parse(cachedData)
+            const updatedPosts = parsedCacheData.posts.map((post) => {
+              if (post.id === postId) {
+                updatedComments = post.comments.filter(
+                  (comment) => comment.id !== commentId,
+                )
+                return {
+                  ...post,
+                  comments: updatedComments,
+                }
+              }
+              return post
+            })
+            const updateCacheData = {
+              ...parsedCacheData,
+              posts: updatedPosts,
+            }
+            sessionStorage.setItem(
+              FEED_CACHE_KEY,
+              JSON.stringify(updateCacheData),
+            )
+            setComments(updatedComments ? updatedComments : [])
+          }
+        } catch (error) {
+          console.error(
+            'Error occured while clearing deleted comments from session storage: ',
+            error,
+          )
+        }
+      }
+    } catch (error) {
+      console.error('Error occured while deleting a comment: ', error)
+    } finally {
+      setIsCommentDeleting(false)
+    }
+  }
   return (
     <div className="flex items-start gap-3">
       <Link href={`/profile/${author.id}`} className="flex-shrink-0 mt-1">
@@ -368,7 +430,6 @@ function AddComment({
         postId: postId,
         comment: commentText,
       })
-      console.log(response.data)
       if (response.status === 201) {
         // Reset the form after posting
         onCommentPosted(response.data)

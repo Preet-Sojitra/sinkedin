@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
-import axios from "axios"
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import axios from 'axios'
 
 export default function ComposePost({ onPostCreated }) {
-  const [content, setContent] = useState("")
+  const [content, setContent] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showError, setShowError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState('')
 
   const supabase = createClient()
 
@@ -29,7 +29,7 @@ export default function ComposePost({ onPostCreated }) {
   const handleAnonymousChange = (e) => {
     if (!isAuthenticated) {
       setShowError(true)
-      setErrorMessage("You must be logged in to post anonymously.")
+      setErrorMessage('You must be logged in to post anonymously.')
       e.preventDefault() // Prevent checkbox from changing
       return
     }
@@ -39,41 +39,41 @@ export default function ComposePost({ onPostCreated }) {
   const handlePostClick = async () => {
     if (!isAuthenticated) {
       setShowError(true)
-      setErrorMessage("You must be logged in to create a post.")
+      setErrorMessage('You must be logged in to create a post.')
       return
     }
 
-    if (content.trim() === "") {
+    if (content.trim() === '') {
       setShowError(true)
-      setErrorMessage("Post content cannot be empty.")
+      setErrorMessage('Post content cannot be empty.')
       return
     }
     setIsLoading(true)
     try {
-      const response = await axios.post("/api/post/create", {
+      const response = await axios.post('/api/post/create', {
         content: content.trim(),
         isAnonymous: isAnonymous,
       })
       // console.log("Post response:", response.data)
       if (response.status === 201) {
         setShowError(false)
-        setErrorMessage("")
-        setContent("")
+        setErrorMessage('')
+        setContent('')
         setIsAnonymous(false)
 
         if (onPostCreated) {
-          onPostCreated(response.data.post) // Notify parent component if needed
+          onPostCreated() // Notify parent component if needed
         }
       } else {
         setShowError(true)
-        setErrorMessage("Failed to create post.")
+        setErrorMessage('Failed to create post.')
       }
     } catch (error) {
-      console.error("Error creating post:", error)
+      console.error('Error creating post:', error)
       showError(true)
       setErrorMessage(
-        "Failed to create post. ",
-        error.message || "Please try again later."
+        'Failed to create post. ',
+        error.message || 'Please try again later.',
       )
     } finally {
       setIsLoading(false)
@@ -86,8 +86,8 @@ export default function ComposePost({ onPostCreated }) {
         className="w-full bg-dark border border-dark-border rounded-lg p-4 text-light text-lg resize-y min-h-[100px] placeholder:text-light-secondary focus:outline-none focus:ring-1 focus:ring-accent"
         placeholder={
           isAuthenticated
-            ? "What went wrong today? Share your latest failure..."
-            : "Please log in to share your thoughts..."
+            ? 'What went wrong today? Share your latest failure...'
+            : 'Please log in to share your thoughts...'
         }
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -103,8 +103,8 @@ export default function ComposePost({ onPostCreated }) {
           <label
             className={`flex items-center gap-2 text-sm text-light-secondary ${
               isAuthenticated
-                ? "cursor-pointer hover:text-light"
-                : "cursor-not-allowed text-light-secondary"
+                ? 'cursor-pointer hover:text-light'
+                : 'cursor-not-allowed text-light-secondary'
             } transition-colors`}
           >
             <input
@@ -120,13 +120,13 @@ export default function ComposePost({ onPostCreated }) {
         <button
           className={`bg-accent text-white border-none px-6 py-[0.4rem] md:py-[0.7rem] rounded-md font-semibold transition-colors duration-200 hover:bg-accent-hover ${
             isAuthenticated
-              ? "cursor-pointer hover:bg-accent-hover"
-              : "cursor-not-allowed bg-light-secondary "
+              ? 'cursor-pointer hover:bg-accent-hover'
+              : 'cursor-not-allowed bg-light-secondary '
           } disabled:bg-light-secondary`}
           onClick={handlePostClick}
           disabled={!isAuthenticated || isLoading}
         >
-          {isLoading ? "Posting..." : "Post"}
+          {isLoading ? 'Posting...' : 'Post'}
         </button>
       </div>
     </div>

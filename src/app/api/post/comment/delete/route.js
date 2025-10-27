@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 export async function DELETE(request) {
   try {
     const supabase = await createClient()
-    const { commentId } = await request.json()
+    const { commentId, currentUserId } = await request.json()
     if (!commentId) {
       return NextResponse.json(
         { error: 'Comment Id is required.' },
@@ -27,6 +27,13 @@ export async function DELETE(request) {
     if (!isAuthenticated) {
       return NextResponse.json(
         { error: 'You must be logged in to delete a comment.' },
+        { status: 403 },
+      )
+    }
+
+    if (userId !== currentUserId) {
+      return NextResponse.json(
+        { error: 'Only author of the comment can delete it' },
         { status: 403 },
       )
     }

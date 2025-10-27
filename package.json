@@ -16,7 +16,7 @@
     "@google/genai": "^1.25.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.75.1",
+    "@supabase/supabase-js": "^2.58.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.9.0",

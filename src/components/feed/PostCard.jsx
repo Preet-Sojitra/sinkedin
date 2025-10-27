@@ -8,12 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Share2, Trash2 } from 'lucide-react'
 
 // --- Main PostCard Component ---
-export default function PostCard({
-  post,
-  currentUserId,
-  currentUserAvatar,
-  setPosts,
-}) {
+export default function PostCard({ post, currentUserId, currentUserAvatar }) {
   const {
     id,
     author,
@@ -25,7 +20,6 @@ export default function PostCard({
     comments: initialComments,
   } = post
 
-  const FEED_CACHE_KEY = 'sinkedin_feed_cache'
   const supabase = createClient()
 
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false)
@@ -106,12 +100,6 @@ export default function PostCard({
     }
   }
 
-  // --- New function to handle optimistic UI update for new comments ---
-  const handleCommentPosted = (newComment) => {
-    // Add the new comment to the top of the list
-    setComments((prevComments) => [newComment, ...prevComments])
-  }
-
   const handleShareClick = () => {
     // Construct the full URL for the post
     const postUrl = `${window.location.origin}/post/${id}`
@@ -137,36 +125,12 @@ export default function PostCard({
     setIsPostDeleting(true)
     try {
       if (author?.id !== currentUserId) return
-      const deleteResponse = await axios.delete('/api/post/delete', {
+      await axios.delete('/api/post/delete', {
         data: {
           postId: id,
+          currentUserId: currentUserId,
         },
       })
-      if (deleteResponse.status === 200) {
-        try {
-          const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)
-          if (cachedData) {
-            const parsedCacheData = JSON.parse(cachedData)
-            const filteredPosts = parsedCacheData.posts.filter(
-              (eachPost) => eachPost.id !== id,
-            )
-            const updateCacheData = {
-              ...parsedCacheData,
-              posts: filteredPosts,
-            }
-            sessionStorage.setItem(
-              FEED_CACHE_KEY,
-              JSON.stringify(updateCacheData),
-            )
-            setPosts(filteredPosts)
-          }
-        } catch (error) {
-          console.error(
-            'Error occured while clearing deleted posts from session storage: ',
-            error,
-          )
-        }
-      }
     } catch (error) {
       console.error('Error while deleting the post: ', error)
     } finally {
@@ -451,19 +415,6 @@ function CommentSection({
     }
   }
 
-  if (!comments || comments.length === 0) {
-    return (
-      <div className="mt-4 pt-4 border-t border-dark-border">
-        <AddComment
-          currentUserAvatar={currentUserAvatar}
-          postId={postId}
-          isUserAuthenticated={isUserAuthenticated} // Pass authentication status
-          setComments={setComments}
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="mt-4 pt-4 border-t border-dark-border flex flex-col gap-4">
       <AddComment
@@ -474,31 +425,34 @@ function CommentSection({
       />
 
       {/* Reverse the comments array for display to show newest first */}
-      {comments
-        .slice()
-        .reverse()
-        .map((comment) => (
-          <Comment
-            key={comment.id}
-            comment={comment}
-            currentUserId={currentUserId}
-            postId={postId}
-            setComments={setComments}
-          />
-        ))}
+      {comments && comments.length > 0 && (
+        <>
+          {comments
+            .slice()
+            .reverse()
+            .map((comment) => (
+              <Comment
+                key={comment.id}
+                comment={comment}
+                currentUserId={currentUserId}
+                postId={postId}
+                setComments={setComments}
+              />
+            ))}
 
-      {/* Logic for showing "Load More" button */}
-      <div className="flex gap-4">
-        {moreCommentsAvailable && comments.length > 0 && (
-          <button
-            onClick={handleLoadMore}
-            disabled={isLoading || !moreCommentsAvailable}
-            className="text-sm text-light-secondary hover:text-light transition-colors self-start disabled:cursor-wait"
-          >
-            {isLoading ? 'Loading...' : 'Load more comments'}
-          </button>
-        )}
-      </div>
+          <div className="flex gap-4">
+            {moreCommentsAvailable && comments.length > 0 && (
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoading || !moreCommentsAvailable}
+                className="text-sm text-light-secondary hover:text-light transition-colors self-start disabled:cursor-wait"
+              >
+                {isLoading ? 'Loading...' : 'Load more comments'}
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -520,6 +474,7 @@ function Comment({ comment, currentUserId, postId, setComments }) {
         {
           data: {
             commentId: commentId,
+            currentUserId: currentUserId,
           },
         },
       )
@@ -641,7 +596,6 @@ function AddComment({
         postId: postId,
         comment: commentText,
       })
-      console.log(response.data)
       if (response.status === 201) {
         try {
           const cachedData = sessionStorage.getItem(FEED_CACHE_KEY)

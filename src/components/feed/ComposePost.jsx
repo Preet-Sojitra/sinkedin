@@ -106,7 +106,7 @@ export default function ComposePost({ onPostCreated }) {
         setIsAnonymous(false)
 
         if (onPostCreated) {
-          onPostCreated(response.data.post) // Notify parent component if needed
+          onPostCreated() // Notify parent component if needed
         }
       } else {
         setShowError(true)

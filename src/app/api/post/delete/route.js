@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 export async function DELETE(request) {
   try {
     const supabase = await createClient()
-    const { postId } = await request.json()
+    const { postId, currentUserId } = await request.json()
     if (!postId) {
       return NextResponse.json(
         { error: 'Post Id is required.' },
@@ -27,6 +27,13 @@ export async function DELETE(request) {
     if (!isAuthenticated) {
       return NextResponse.json(
         { error: 'You must be logged in to delete a post.' },
+        { status: 403 },
+      )
+    }
+
+    if (userId !== currentUserId) {
+      return NextResponse.json(
+        { error: 'Only author of the post can delete it' },
         { status: 403 },
       )
     }

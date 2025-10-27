@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { Filter } from 'bad-words'
+import { initQueue } from '@/lib/content-moderation/queuing'
+import TokenizePosts from '@/lib/content-moderation/tokenize'
+
 
 // Initialize the bad words filter
 const filter = new Filter()
 
-// List of positive words to detect
+
+// initialize the queue for the post content check
+const { addToQueue } = initQueue()
+
 const positiveWords = [
   'great',
   'awesome',
@@ -48,6 +54,7 @@ const countPositiveWords = (content) => {
   return count
 }
 
+
 const censorWord = (word) => {
   // Replace the word with asterisks, maintaining the original length
   if (word.length <= 2) {
@@ -76,6 +83,7 @@ export async function POST(request) {
           error:
             'Whoa, too much sunshine here! Even unicorns are jealous. Share a flop instead!',
         },
+
         { status: 400 },
       )
     }
@@ -155,6 +163,16 @@ export async function POST(request) {
       )
       .eq('id', post.id) // Filter to get only the post we just created
       .single() // We expect only one result
+
+    // convert the words into tokens
+    const tokens = TokenizePosts(censoredContent)
+
+    // add to the queue for llm check
+    const postObject = {
+      id: post.id,
+      tokens: tokens,
+    }
+    addToQueue(postObject)
 
     if (fetchError || !fullPost) {
       console.error('Error fetching newly created post:', fetchError)

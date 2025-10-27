@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useUser } from '@/contexts/UserContext'
 import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -10,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 export default function SignupPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { refreshProfile } = useUser()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -65,6 +67,7 @@ export default function SignupPage() {
       }
 
       if (user) {
+        await refreshProfile()
         router.push('/welcome')
       } else {
         setShowError(true)

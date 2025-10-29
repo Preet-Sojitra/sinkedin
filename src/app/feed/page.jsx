@@ -213,7 +213,10 @@ export default function HomePage() {
       <Header />
       <FetchRealtimePost setPosts={setPosts} />
       <main className="max-w-[800px] mx-auto my-6 px-5 md:my-8 md:px-6 flex flex-col gap-6">
-        <ComposePost onPostCreated={scrollOnPostCreate} />
+        <ComposePost
+          onPostCreated={scrollOnPostCreate}
+          currentUser={currentUser}
+        />
 
         {/* Use the isLoading state to conditionally render skeletons or posts */}
         {isLoading ? (

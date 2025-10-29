@@ -68,6 +68,7 @@ CREATE POLICY "Users can delete their own reactions."
   TO authenticated
   USING (auth.uid() = user_id);
 
+
 -- Comments for clarity
 COMMENT ON POLICY "Posts are viewable by everyone." ON public.posts IS 'Allows read access to all posts for displaying in feeds.';
 COMMENT ON POLICY "Authenticated users can create posts." ON public.posts IS 'Ensures only authenticated users can create posts.';

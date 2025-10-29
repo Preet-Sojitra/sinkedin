@@ -47,7 +47,7 @@ const countPositiveWords = (content) => {
   return count
 }
 
-export default function ComposePost({ onPostCreated }) {
+export default function ComposePost({ onPostCreated, currentUser }) {
   const [content, setContent] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -71,21 +71,21 @@ export default function ComposePost({ onPostCreated }) {
   }, [])
 
   const handleAnonymousChange = (e) => {
-    if (!isAuthenticated) {
-      setShowError(true)
-      setErrorMessage('You must be logged in to post anonymously.')
-      e.preventDefault() // Prevent checkbox from changing
-      return
-    }
+    // if (!isAuthenticated) {
+    //   setShowError(true)
+    //   setErrorMessage('You must be logged in to post anonymously.')
+    //   e.preventDefault() // Prevent checkbox from changing
+    //   return
+    // }
     setIsAnonymous(e.target.checked)
   }
 
   const handlePostClick = async () => {
-    if (!isAuthenticated) {
-      setShowError(true)
-      setErrorMessage('You must be logged in to create a post.')
-      return
-    }
+    // if (!isAuthenticated) {
+    //   setShowError(true)
+    //   setErrorMessage('You must be logged in to create a post.')
+    //   return
+    // }
 
     if (content.trim() === '') {
       setShowError(true)
@@ -96,7 +96,7 @@ export default function ComposePost({ onPostCreated }) {
     try {
       const response = await axios.post('/api/post/create', {
         content: content.trim(),
-        isAnonymous: isAnonymous,
+        isAnonymous: currentUser ? isAnonymous : true,
       })
       // console.log("Post response:", response.data)
       if (response.status === 201) {
@@ -114,7 +114,7 @@ export default function ComposePost({ onPostCreated }) {
       }
     } catch (error) {
       console.error('Error creating post:', error)
-      showError(true)
+      setShowError(true)
       setErrorMessage(
         'Failed to create post. ',
         error.message || 'Please try again later.',
@@ -131,7 +131,7 @@ export default function ComposePost({ onPostCreated }) {
         placeholder={
           isAuthenticated
             ? 'What went wrong today? Share your latest failure...'
-            : 'Please log in to share your thoughts...'
+            : 'What went wrong today? Share your flop anonymously...'
         }
         value={content}
         onChange={(e) => {
@@ -167,17 +167,14 @@ export default function ComposePost({ onPostCreated }) {
               className="w-4 h-4 rounded bg-dark border-dark-border text-accent focus:ring-accent"
               checked={isAnonymous}
               onChange={handleAnonymousChange}
-              disabled={!isAuthenticated}
+              disabled={!currentUser}
             />
             Post anonymously
           </label>
         </div>
         <button
-          className={`bg-accent text-white border-none px-6 py-[0.4rem] md:py-[0.7rem] rounded-md font-semibold transition-colors duration-200 hover:bg-accent-hover ${
-            isAuthenticated
-              ? 'cursor-pointer hover:bg-accent-hover'
-              : 'cursor-not-allowed bg-light-secondary '
-          } disabled:bg-light-secondary`}
+          className={`bg-accent text-white border-none px-6 py-[0.4rem] md:py-[0.7rem] rounded-md font-semibold transition-colors duration-200 
+            ${isLoading || content.trim() === '' ? 'cursor-not-allowed bg-light-secondary' : 'cursor-pointer hover:bg-accent-hover'}`}
           onClick={(e) => {
             if (showPositiveWarning) {
               e.preventDefault()
@@ -185,7 +182,7 @@ export default function ComposePost({ onPostCreated }) {
             }
             handlePostClick()
           }}
-          disabled={!isAuthenticated || isLoading}
+          disabled={isLoading || content.trim() === ''}
         >
           {isLoading ? 'Posting...' : 'Post'}
         </button>

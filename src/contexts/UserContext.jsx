@@ -45,7 +45,7 @@ export function UserProvider({ children }) {
     if (!user) return
 
     const supabase = createClient()
-    
+
     // Update the profile in the database
     const { data, error } = await supabase
       .from('profiles')
@@ -60,7 +60,7 @@ export function UserProvider({ children }) {
     }
 
     // Update the local state with the new data
-    setProfile(prev => ({ ...prev, ...data }))
+    setProfile((prev) => ({ ...prev, ...data }))
     return true
   }
 

@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Camera, X } from "lucide-react"
-import Image from "next/image"
-import { createClient } from "@/lib/supabase/client"
-import { useUser } from "@/contexts/UserContext"
-import axios from "axios"
+import { useState } from 'react'
+import { Camera, X } from 'lucide-react'
+import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
+import { useUser } from '@/contexts/UserContext'
+import axios from 'axios'
 
 export default function EditProfileModal({
   initialProfile,
@@ -14,40 +14,39 @@ export default function EditProfileModal({
 }) {
   const { refreshProfile } = useUser()
   const [username, setUsername] = useState(initialProfile.username)
-  const [headline, setHeadline] = useState(initialProfile.headline || "")
-  const [bio, setBio] = useState(initialProfile.bio || "")
-  const [biggestL, setBiggestL] = useState(initialProfile.biggest_l || "")
+  const [headline, setHeadline] = useState(initialProfile.headline || '')
+  const [bio, setBio] = useState(initialProfile.bio || '')
   const [avatarPreview, setAvatarPreview] = useState(initialProfile.avatar_url)
   const [avatarFile, setAvatarFile] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleAvatarUpload = (e) => {
     const file = e.target.files[0]
     if (file) {
-      if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
-        setErrorMessage("Please upload a valid image under 5MB")
+      if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
+        setErrorMessage('Please upload a valid image under 5MB')
         return
       }
       setAvatarFile(file)
       const reader = new FileReader()
       reader.onload = (e) => setAvatarPreview(e.target.result)
       reader.readAsDataURL(file)
-      setErrorMessage("")
+      setErrorMessage('')
     }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setErrorMessage("")
+    setErrorMessage('')
 
     const supabase = createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      setErrorMessage("Authentication error. Please log in again.")
+      setErrorMessage('Authentication error. Please log in again.')
       setLoading(false)
       return
     }
@@ -56,27 +55,27 @@ export default function EditProfileModal({
 
     // If a new avatar file was selected, upload it first
     if (avatarFile) {
-      const fileExt = avatarFile.name.split(".").pop()
+      const fileExt = avatarFile.name.split('.').pop()
       const fileName = `${Date.now()}.${fileExt}`
       const filePath = `${user.id}/${fileName}`
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("avatars")
+        .from('avatars')
         .upload(filePath, avatarFile)
 
       if (uploadError) {
-        setErrorMessage("Failed to upload new avatar.")
+        setErrorMessage('Failed to upload new avatar.')
         setLoading(false)
         return
       }
 
       const { data: urlData } = supabase.storage
-        .from("avatars")
+        .from('avatars')
         .getPublicUrl(uploadData.path)
       avatarUrl = urlData.publicUrl
     }
 
     try {
-      const response = await axios.post("/api/profile/update", {
+      const response = await axios.post('/api/profile/update', {
         username,
         headline,
         bio,
@@ -91,7 +90,7 @@ export default function EditProfileModal({
       }
     } catch (error) {
       const apiError =
-        error.response?.data?.error || "An unexpected error occurred."
+        error.response?.data?.error || 'An unexpected error occurred.'
       setErrorMessage(apiError)
     } finally {
       setLoading(false)
@@ -116,7 +115,7 @@ export default function EditProfileModal({
             <div className="relative inline-block">
               <div className="w-24 h-24 rounded-full border-2 flex items-center justify-center overflow-hidden border-dark-border">
                 <Image
-                  src={avatarPreview || "/default_avatar.jpg"}
+                  src={avatarPreview || '/default_avatar.jpg'}
                   alt="Avatar Preview"
                   width={96}
                   height={96}
@@ -203,7 +202,7 @@ export default function EditProfileModal({
                 disabled={loading}
                 className="flex-1 px-6 py-3 rounded-lg font-semibold bg-accent text-light hover:opacity-90 transition-opacity"
               >
-                {loading ? "Saving..." : "Save Changes"}
+                {loading ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>

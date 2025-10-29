@@ -1,11 +1,11 @@
-import "./globals.css"
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { UserProvider } from "@/contexts/UserContext"
+import './globals.css'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+import { UserProvider } from '@/contexts/UserContext'
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 export const metadata = {
-  title: "Sinkedin: Professional Fails & Career Despair",
+  title: 'Sinkedin: Professional Fails & Career Despair',
   description:
     "The brutally honest, hilariously real anti-professional network. Share job rejection stories, epic interview fails, and career disasters. It's schadenfreude, but for work.",
   // Uncomment when pushin to production
@@ -59,10 +59,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <UserProvider>
-          {children}
-        </UserProvider>
-        {process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === "true" && (
+        <UserProvider>{children}</UserProvider>
+        {process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true' && (
           <>
             <Analytics />
             <SpeedInsights />

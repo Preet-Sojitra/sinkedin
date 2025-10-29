@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 
 // This function now fetches the real user from Supabase
 async function getCurrentUser() {
@@ -28,7 +28,7 @@ export default async function MyProfilePage() {
   if (!userId) {
     // If no user is logged in, redirect to the login page
     // console.log("Redirecting to login page...")
-    redirect("/login")
+    redirect('/login')
   }
 
   // If the user is logged in, redirect them to their public profile page

@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { Briefcase, Users, MessageSquare, TrendingUp } from "lucide-react"
+import Link from 'next/link'
+import { Briefcase, Users, MessageSquare, TrendingUp } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -19,7 +19,7 @@ export default function Home() {
               </p>
               <p className="text-gray-300 mb-8 text-lg">
                 Job hunt got you feeling like a melted candle? LinkedIn feed
-                look like a parade of humblebrags you can't relate to?{" "}
+                look like a parade of humblebrags you can't relate to?{' '}
                 <b>Welcome home.</b>
               </p>
               <div className="space-y-2 space-x-4 lg:space-y-0 lg:flex lg:space-x-4">
@@ -66,7 +66,7 @@ export default function Home() {
       <section className="py-20 bg-dark">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl font-bold text-center mb-16 text-light">
-            Why Choose{" "}
+            Why Choose{' '}
             <span className="text-light">
               S<strike className="text-accent no-underline">in</strike>kedIn
             </span>

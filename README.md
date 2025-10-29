@@ -1,10 +1,10 @@
 # Sinkedin: Linkedin's Darker, Funnier and More Honest Cousin
 
 ## Technology Stack:
+
 - **Frontend**: Next.js, React, Tailwind CSS
 - **Backend**: Supabase (PostgreSQL, Auth, Storage)
 - **Deployment**: Vercel
-
 
 ## Contributing
 
@@ -42,11 +42,11 @@ Welcome! We're excited that you're interested in contributing. This guide provid
 
 Before you begin, ensure you have the following installed on your system:
 
--   [Node.js](https://nodejs.org/) (v18 or later)
--   [pnpm](https://pnpm.io/installation) (or npm/yarn)
--   [Git](https://git-scm.com/)
--   [Docker](https://www.docker.com/products/docker-desktop/) (required for Supabase CLI)
--   [Supabase CLI](https://supabase.com/docs/guides/cli) (required for Option 1)
+- [Node.js](https://nodejs.org/) (v18 or later)
+- [pnpm](https://pnpm.io/installation) (or npm/yarn)
+- [Git](https://git-scm.com/)
+- [Docker](https://www.docker.com/products/docker-desktop/) (required for Supabase CLI)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) (required for Option 1)
 
 ## Getting Started
 
@@ -252,9 +252,8 @@ You only need to complete this section if you are specifically developing or tes
     f. For the **Application type**, select **Web application**.
 
     g. Under **Authorized redirect URIs**, click **+ ADD URI**. Add the following URL, replacing `YOUR_PROJECT_REF` with your Supabase project reference ID (e.g., `abcdefg` from `abcdefg.supabase.co`):
-
-       -   **Cloud:** `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
-       -   **Local CLI:** `http://127.0.0.1:54321/auth/v1/callback`
+    - **Cloud:** `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+    - **Local CLI:** `http://127.0.0.1:54321/auth/v1/callback`
 
     h. Click **CREATE**. You will be given a **Client ID** and a **Client Secret**.
 
@@ -274,7 +273,7 @@ You only need to complete this section if you are specifically developing or tes
     b. Navigate to **Authentication -> Providers**.
 
     c. Find **Google** in the list and enable it.
-    
+
     d. Copy the **Client ID** and **Client Secret** from your `.env.local` file into the corresponding fields.
 
     e. Click **Save**.
@@ -291,9 +290,9 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 ## Troubleshooting
 
--   **Error `fetch failed`:** This usually means your Next.js app cannot connect to the Supabase API.
-    -   Double-check that the `NEXT_PUBLIC_SUPABASE_URL` in your `.env.local` is correct.
-    -   If using the CLI, ensure the Docker containers are running (`supabase status`).
-    -   Restart the Next.js dev server after any changes to `.env.local`.
--   **Google Sign-In Error `redirect_uri_mismatch`:** The **Authorized redirect URI** in your Google Cloud Console does not exactly match the one required by Supabase. Verify the URL is correct for your local or cloud instance.
--   **Database Issues:** If your local database gets into a bad state, the easiest fix is to run `supabase db reset`. Be aware this will delete all local data.
+- **Error `fetch failed`:** This usually means your Next.js app cannot connect to the Supabase API.
+  - Double-check that the `NEXT_PUBLIC_SUPABASE_URL` in your `.env.local` is correct.
+  - If using the CLI, ensure the Docker containers are running (`supabase status`).
+  - Restart the Next.js dev server after any changes to `.env.local`.
+- **Google Sign-In Error `redirect_uri_mismatch`:** The **Authorized redirect URI** in your Google Cloud Console does not exactly match the one required by Supabase. Verify the URL is correct for your local or cloud instance.
+- **Database Issues:** If your local database gets into a bad state, the easiest fix is to run `supabase db reset`. Be aware this will delete all local data.

@@ -3,20 +3,20 @@
 > Need to refine these ideas and prioritize over different stages
 
 1. Failure Posts (The Main Feed)
-    - Users can attach memes, GIFs, or screenshots (e.g., a brutal rejection email).
+   - Users can attach memes, GIFs, or screenshots (e.g., a brutal rejection email).
 2. SinkedIn Badges
-    - Users earn comedic badges for their failures, like “Ghosted Guru” (5+ ignored applications), “Cover Letter Catastrophe” (shared a cringey letter), or “Interview Imploder” (bombed an interview).
-    - Badges display on profiles, gamifying the misery.
+   - Users earn comedic badges for their failures, like “Ghosted Guru” (5+ ignored applications), “Cover Letter Catastrophe” (shared a cringey letter), or “Interview Imploder” (bombed an interview).
+   - Badges display on profiles, gamifying the misery.
 3. Roast Reactions
-    - Instead of “Like” or “Celebrate,” reactions are snarky: “Oof,” “Been There,” “Savage,” or “Cringe.”
-    Users can comment with witty one-liners or pile on the roast.
+   - Instead of “Like” or “Celebrate,” reactions are snarky: “Oof,” “Been There,” “Savage,” or “Cringe.”
+     Users can comment with witty one-liners or pile on the roast.
 4. An AI bot that automatically generates roast comments based on the post content. (**Sinkedin Official Profile**: It will automatically comment on every post.)
 5. Anonymous Mode
-    - Users can post anonymously to share juicy fails without tanking their professional rep.
-    - Toggle between public and anonymous profiles.
+   - Users can post anonymously to share juicy fails without tanking their professional rep.
+   - Toggle between public and anonymous profiles.
 6. Profile Basics ("Failure Résumés" / "Wall of Shame")
-    - Simple profiles: username, optional bio, badges earned, and a “Biggest L” section where users summarize their worst career fail.
-    - No resumes, no skills lists—just a place to flex your flops.
+   - Simple profiles: username, optional bio, badges earned, and a “Biggest L” section where users summarize their worst career fail.
+   - No resumes, no skills lists—just a place to flex your flops.
 7. "Severity Score" / "Disaster Scale": Users can optionally rate their fuckup on a scale of 1-10 (1 = "Spilled coffee on resume," 10 = "Accidentally CC'd CEO on email calling them a muppet").
 8. "Rejection Bingo": A bingo card with common rejection phrases ("not a good fit," "decided to move forward with other candidates," "will keep your resume on file"). Users can mark them off.
 9. "Worst Rejection Letter" of the Week/Month: A contest. Anonymized, of course.

@@ -1,23 +1,23 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export default function SignupPage() {
   const router = useRouter()
   const supabase = createClient()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
+    email: '',
+    password: '',
+    confirmPassword: '',
   })
   const [showError, setShowError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (e) => {
@@ -33,17 +33,17 @@ export default function SignupPage() {
     // Basic validation
     if (!formData.email || !formData.password || !formData.confirmPassword) {
       setShowError(true)
-      setErrorMessage("All fields are required")
+      setErrorMessage('All fields are required')
       return
     }
     if (formData.password !== formData.confirmPassword) {
       setShowError(true)
-      setErrorMessage("Passwords do not match")
+      setErrorMessage('Passwords do not match')
       return
     }
     if (formData.password.length < 6) {
       setShowError(true)
-      setErrorMessage("Password must be at least 6 characters long")
+      setErrorMessage('Password must be at least 6 characters long')
       return
     }
     setIsLoading(true)
@@ -57,29 +57,29 @@ export default function SignupPage() {
         password: formData.password,
       })
       if (error) {
-        console.error("Supabase signup error:", error)
+        console.error('Supabase signup error:', error)
         setShowError(true)
-        setErrorMessage(error.message || "Failed to create account")
+        setErrorMessage(error.message || 'Failed to create account')
         setIsLoading(false)
         return
       }
 
       if (user) {
-        router.push("/welcome")
+        router.push('/welcome')
       } else {
         setShowError(true)
-        setErrorMessage("User object is null or undefined")
+        setErrorMessage('User object is null or undefined')
         setIsLoading(false)
         return
       }
     } catch (error) {
-      console.error("Signup error:", error)
+      console.error('Signup error:', error)
       if (error.response && error.response.data) {
         setShowError(true)
-        setErrorMessage(error.response.data.error || "Signup failed")
+        setErrorMessage(error.response.data.error || 'Signup failed')
       } else {
         setShowError(true)
-        setErrorMessage("An unexpected error occurred. Please try again.")
+        setErrorMessage('An unexpected error occurred. Please try again.')
       }
       setIsLoading(false)
     }
@@ -87,7 +87,7 @@ export default function SignupPage() {
 
   const handleGoogleSignup = async () => {
     await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: 'google',
       options: {
         // This is where Supabase will redirect the user back to your app
         // after they have signed in with Google.
@@ -171,7 +171,7 @@ export default function SignupPage() {
                 onClick={handleGoogleSignup}
               >
                 <Image
-                  src={"/google_icon.svg"}
+                  src={'/google_icon.svg'}
                   alt="Google Icon"
                   width={25}
                   height={25}
@@ -190,7 +190,7 @@ export default function SignupPage() {
 
             {showError && (
               <div className="mb-1 text-red-500 text-sm text-center">
-                {errorMessage || "An error occurred. Please try again."}
+                {errorMessage || 'An error occurred. Please try again.'}
               </div>
             )}
 
@@ -225,7 +225,7 @@ export default function SignupPage() {
                   </label>
                   <div className="relative">
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       id="password"
                       name="password"
                       value={formData.password}
@@ -272,7 +272,7 @@ export default function SignupPage() {
                   className="w-full bg-accent hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Creating Account..." : "Join the Chaos"}
+                  {isLoading ? 'Creating Account...' : 'Join the Chaos'}
                 </button>
               </div>
             </form>
@@ -280,14 +280,14 @@ export default function SignupPage() {
             {/* Terms */}
             <div className="mt-6 text-center">
               <p className="text-xs text-light-secondary">
-                By joining, you agree to our{" "}
+                By joining, you agree to our{' '}
                 <Link
                   href="/terms"
                   className="text-red-400 hover:text-red-300 underline"
                 >
-                  Terms of Service{" "}
+                  Terms of Service{' '}
                 </Link>
-                and{" "}
+                and{' '}
                 <Link
                   href="/privacy"
                   className="text-red-400 hover:text-red-300 underline"
@@ -300,7 +300,7 @@ export default function SignupPage() {
             {/* Login Link */}
             <div className="mt-6 text-center">
               <p className="text-light-secondary text-sm">
-                Already failed here before?{" "}
+                Already failed here before?{' '}
                 <Link
                   href="/auth/login"
                   className="text-red-400 hover:text-red-300 font-medium"

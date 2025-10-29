@@ -93,32 +93,34 @@ export async function POST(request) {
 
     if (sessionError) {
       console.error('Session error:', sessionError)
-      return NextResponse.json(
-        { error: 'Failed to retrieve session.' },
-        { status: 500 },
-      )
+      // return NextResponse.json(
+      //   // { error: 'Failed to retrieve session.' },
+      //   // { status: 500 },
+      // )
     }
 
-    const userId = session?.user?.id || null
+    const userId = session?.user?.id ? session.user.id : null
     // console.log("User ID:", userId)
-    const isAuthenticated = !!userId
+    //const isAuthenticated = !!userId
     // console.log("Is authenticated:", isAuthenticated)
 
     // If the user is not authenticated and tries to post anonymously, return an error
-    if (isAnonymous && !isAuthenticated) {
-      return NextResponse.json(
-        { error: 'You must be logged in to post anonymously.' },
-        { status: 403 },
-      )
-    }
+    // if (isAnonymous && !isAuthenticated) {
+    //   return NextResponse.json(
+    //     { error: 'You must be logged in to post anonymously.' },
+    //     { status: 403 },
+    //   )
+    // }
 
     // Insert the post into the database
     const { data: post, error: postError } = await supabase
       .from('posts')
       .insert({
-        user_id: userId,
+        user_id: userId ? userId : null,
         body: censoredContent.trim(),
-        is_anonymous: isAnonymous,
+        //user can choose to post anonymously or
+        // user is not logged in
+        is_anonymous: isAnonymous || !userId,
       })
       .select()
       .single()

@@ -459,11 +459,161 @@ function CommentSection({
 
 // --- Helper Component: A single comment ---
 function Comment({ comment, currentUserId, postId, setComments }) {
+  const supabase = createClient()
   const FEED_CACHE_KEY = 'sinkedin_feed_cache'
 
   const { author, avatar_url, body, created_at, id: commentId } = comment
   const timeAgo = formatDistanceToNow(new Date(created_at), { addSuffix: true })
   const [isCommentDeleting, setIsCommentDeleting] = useState(false)
+
+  const [reactionCounts, setReactionCounts] = useState({
+    Laugh: 0,
+    Clown: 0,
+    Skull: 0,
+    Relatable: 0,
+  })
+  const [reactedEmoji, setReactedEmoji] = useState(null)
+
+  const reactionToEmojiMap = {
+    Laugh: '😆',
+    Clown: '🤡',
+    Skull: '💀',
+    Relatable: '🤝',
+  }
+
+  function ReactionEmojiButton({
+    emojiName,
+    emojiChar,
+    gifUrl,
+    count,
+    selected,
+    onClick,
+  }) {
+    const [hovered, setHovered] = useState(false)
+    const [clicked, setClicked] = useState(false)
+    const clickTimerRef = useRef(null)
+
+    useEffect(() => {
+      return () => {
+        if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+      }
+    }, [])
+    const handleMouseEnter = () => setHovered(true)
+    const handleMouseLeave = () => setHovered(false)
+
+    const handlePress = (e) => {
+      // keep original onClick behavior (which will call your API)
+      onClick && onClick(e)
+
+      // show animation briefly after click — good for mobile
+      setClicked(true)
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+      clickTimerRef.current = setTimeout(() => {
+        setClicked(false)
+      }, 1500) // show gif for 1.5s after click
+    }
+
+    const showGif = hovered || clicked
+
+    return (
+      <button
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handlePress}
+        aria-pressed={selected}
+        title={emojiName}
+        className={`flex items-center gap-2 text-light-secondary text-sm duration-200 ${
+          selected ? 'bg-white/10 text-light p-1 rounded-md' : ''
+        }`}
+        // keep appearance identical to previous buttons
+      >
+        <span className="flex items-center justify-center w-[1.375rem] h-[1.375rem]">
+          {showGif && gifUrl ? (
+            // plain <img> — avoid next/image for external GIFs
+            <img
+              src={gifUrl}
+              alt={`${emojiName} animation`}
+              className="w-[1.5rem] h-[1.5rem] object-contain pointer-events-none"
+              draggable={false}
+            />
+          ) : (
+            <span className="text-xl select-none">{emojiChar}</span>
+          )}
+        </span>
+        <span className="font-medium">{count}</span>
+      </button>
+    )
+  }
+
+  const reactionToGifMap = {
+    Laugh: '/laugh.gif',
+    Clown: '/clown.gif',
+    Skull: '/skull.gif',
+    Relatable: '/relatable.gif',
+  }
+
+  useEffect(() => {
+    const loadReactions = async () => {
+      const { data, error } = await supabase
+        .from('reply_reactions')
+        .select('emoji, user_id')
+        .eq('reply_id', commentId)
+
+      if (error) {
+        console.error('Error loading reactions:', error)
+        return
+      }
+
+      const counts = { Laugh: 0, Clown: 0, Skull: 0, Relatable: 0 }
+      let userEmoji = null
+      data.forEach((r) => {
+        if (counts[r.emoji] !== undefined) counts[r.emoji]++
+        if (r.user_id === currentUserId) userEmoji = r.emoji
+      })
+      setReactionCounts(counts)
+      setReactedEmoji(userEmoji)
+    }
+
+    loadReactions()
+  }, [commentId, currentUserId])
+
+  const handleReaction = async (emoji) => {
+    if (!currentUserId) return
+
+    const isRemoving = reactedEmoji === emoji
+    const newCounts = { ...reactionCounts }
+
+    if (isRemoving) newCounts[emoji]--
+    else {
+      if (reactedEmoji) newCounts[reactedEmoji]--
+      newCounts[emoji]++
+    }
+
+    setReactedEmoji(isRemoving ? null : emoji)
+    setReactionCounts(newCounts)
+
+    try {
+      if (isRemoving) {
+        await supabase
+          .from('reply_reactions')
+          .delete()
+          .eq('reply_id', commentId)
+          .eq('user_id', currentUserId)
+          .eq('emoji', emoji)
+      } else {
+        await supabase.from('reply_reactions').upsert(
+          {
+            reply_id: commentId,
+            user_id: currentUserId,
+            emoji,
+          },
+          { onConflict: 'reply_id,user_id' },
+        )
+      }
+    } catch (err) {
+      console.error('Error updating reaction:', err)
+    }
+  }
 
   const handleCommentDelete = async () => {
     setIsCommentDeleting(true)
@@ -567,9 +717,31 @@ function Comment({ comment, currentUserId, postId, setComments }) {
             )}
           </div>
         </div>
+
+        {/*️ comment text */}
         <p className="text-light whitespace-pre-wrap mt-2 sm:mt-1 text-sm">
           {body}
         </p>
+
+        {/* add your emoji reactions here ↓↓↓ */}
+        <div className="flex gap-4 pt-3 pl-2 flex-wrap">
+          {Object.entries(reactionCounts).map(([emojiName, count]) => {
+            const emoji = reactionToEmojiMap[emojiName] || emojiName
+            const gif = reactionToGifMap[emojiName]
+            const hasReacted = reactedEmoji === emojiName
+            return (
+              <ReactionEmojiButton
+                key={emojiName}
+                emojiName={emojiName}
+                emojiChar={emoji}
+                gifUrl={gif}
+                count={count}
+                selected={hasReacted}
+                onClick={() => handleReaction(emojiName)}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )
